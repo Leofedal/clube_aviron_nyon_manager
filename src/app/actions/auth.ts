@@ -23,7 +23,16 @@ export async function loginAction(input: { email: string; password: string; next
     return { ok: false, error: "Trop de tentatives. Réessayez dans quelques minutes." };
   }
 
-  const user = await authenticate(parsed.data.email, parsed.data.password);
+  let user: Awaited<ReturnType<typeof authenticate>>;
+  try {
+    user = await authenticate(parsed.data.email, parsed.data.password);
+  } catch (e) {
+    console.error(e);
+    return {
+      ok: false,
+      error: "Le serveur ne parvient pas à joindre la base de données. Réessayez plus tard ou contactez un administrateur.",
+    };
+  }
   if (!user) {
     attempts.set(key, { count: (entry && entry.until > now ? entry.count : 0) + 1, until: now + WINDOW_MS });
     return { ok: false, error: "E-mail ou mot de passe incorrect." };

@@ -13,7 +13,7 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
-    "db:test:prepare": "dotenv -e .env.test -- prisma migrate deploy",
+    "db:test:prepare": "node scripts/prepare-test-db.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -56,7 +56,6 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "dotenv": "^18.0.10",
-    "dotenv-cli": "^11.1.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",
     "prisma": "^6.19.3",

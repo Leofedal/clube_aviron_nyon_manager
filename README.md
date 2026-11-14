@@ -29,15 +29,20 @@ côté serveur (services métier), l'interface ne fait que masquer les actions n
 
 ## Démarrage local
 
-Prérequis : Node.js 20+ et PostgreSQL 14+ (l'extension `btree_gist`, standard, est activée par la migration).
+Prérequis : Node.js 20+ et une base PostgreSQL 14+. Le plus simple est
+[Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows, macOS, Linux).
 
 ```bash
 npm install
-cp .env.example .env        # puis renseigner DATABASE_URL, DIRECT_URL, SEED_ADMIN_PASSWORD
+docker compose up -d        # démarre PostgreSQL sur le port 5433 (+ base de test)
+cp .env.example .env        # Windows PowerShell : copy .env.example .env
 npm run db:migrate          # crée le schéma et les contraintes
 npm run db:seed             # données de démonstration
 npm run dev                 # http://localhost:3000
 ```
+
+Sans Docker : installez PostgreSQL ou créez une base gratuite chez [Neon](https://neon.tech), puis remplacez
+`DATABASE_URL` et `DIRECT_URL` dans `.env` par l'adresse fournie.
 
 Comptes de démonstration : `admin@aviron.example` (administrateur) et `prenom.nom@aviron.example`
 (ex. `marc.dubois@aviron.example`), mot de passe = valeur de `SEED_ADMIN_PASSWORD`.
@@ -48,7 +53,7 @@ Le seed **efface la base** et refuse de s'exécuter en production (sauf `ALLOW_D
 Les tests d'intégration utilisent une vraie base PostgreSQL dédiée (`.env.test`, le nom doit contenir « test »).
 
 ```bash
-createdb rowing_test                # une seule fois
+cp .env.test.example .env.test      # base rowing_test déjà créée par docker compose
 npm run db:test:prepare             # applique les migrations à la base de test
 npm test
 ```
