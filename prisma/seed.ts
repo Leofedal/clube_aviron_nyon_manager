@@ -215,6 +215,12 @@ async function main() {
 
 main()
   .catch((e) => {
+    // P2021 / P2022 : table ou colonne absente → migrations non appliquées
+    if (e && typeof e === "object" && "code" in e && (e.code === "P2021" || e.code === "P2022")) {
+      console.error("\n✖ La base de données n'est pas à jour (migration manquante).");
+      console.error("  Lancez d'abord : npm run db:deploy   puis relancez : npm run db:seed\n");
+      process.exit(1);
+    }
     console.error(e);
     process.exit(1);
   })
