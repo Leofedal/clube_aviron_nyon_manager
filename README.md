@@ -44,8 +44,20 @@ npm run dev                 # http://localhost:3000
 Sans Docker : installez PostgreSQL ou créez une base gratuite chez [Neon](https://neon.tech), puis remplacez
 `DATABASE_URL` et `DIRECT_URL` dans `.env` par l'adresse fournie.
 
-Comptes de démonstration : `admin@aviron.example` (administrateur) et `prenom.nom@aviron.example`
-(ex. `marc.dubois@aviron.example`), mot de passe = valeur de `SEED_ADMIN_PASSWORD`.
+### Comptes de démonstration
+
+Créés par `npm run db:seed`. Mot de passe : la valeur de `SEED_ADMIN_PASSWORD` dans `.env`
+(`aviron-demo-2026` avec le `.env.example` fourni).
+
+| Rôle | Nom | E-mail | Mot de passe |
+|---|---|---|---|
+| Administrateur | Claire Martin | `admin@aviron.example` | `aviron-demo-2026` |
+| Membre | Marc Dubois | `marc.dubois@aviron.example` | `aviron-demo-2026` |
+
+Les 14 autres membres suivent le modèle `prenom.nom@aviron.example`, sans accents
+(ex. `julie.favre@aviron.example`, `lea.bonvin@aviron.example`), avec le même mot de passe.
+Thomas Vuille est un ancien membre désactivé : il ne peut pas se connecter.
+
 Avec `DEMO_LOGIN="true"` dans `.env`, la page de connexion affiche deux boutons « Administrateur » et « Membre »
 pour se connecter en un clic. **Ne jamais l'activer sur le site réel du club.**
 Le seed **efface la base** et refuse de s'exécuter en production (sauf `ALLOW_DEMO_SEED=true`).
