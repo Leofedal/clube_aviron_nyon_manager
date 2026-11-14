@@ -62,6 +62,24 @@ Avec `DEMO_LOGIN="true"` dans `.env`, la page de connexion affiche deux boutons 
 pour se connecter en un clic. **Ne jamais l'activer sur le site réel du club.**
 Le seed **efface la base** et refuse de s'exécuter en production (sauf `ALLOW_DEMO_SEED=true`).
 
+### Mode démonstration du tableau de bord
+
+Avec `DEMO_LOGIN="true"`, on peut simuler l'heure et le vent en ajoutant des paramètres à l'adresse du tableau de bord.
+Un bandeau « Simulation » signale que les données sont fictives. Ignoré quand `DEMO_LOGIN` n'est pas activé.
+
+| Pour montrer… | Adresse |
+|---|---|
+| Coucher du soleil dans moins d'une heure (alerte rouge) | `http://localhost:3000/?heure=16:30` |
+| Soleil déjà couché (heure du lever) | `http://localhost:3000/?heure=18:00` |
+| Coucher du soleil encore loin | `http://localhost:3000/?heure=10:00` |
+| Vent faible | `http://localhost:3000/?vent=6&rafales=10&direction=45` |
+| Bise modérée | `http://localhost:3000/?vent=15&rafales=24&direction=45` |
+| Joran fort | `http://localhost:3000/?vent=24&rafales=38&direction=315` |
+| Vent très fort, sortie déconseillée | `http://localhost:3000/?vent=35&rafales=50&direction=230` |
+| Tout combiné | `http://localhost:3000/?heure=16:30&vent=24&rafales=38&direction=315` |
+
+`direction` = d'où vient le vent, en degrés (45 = nord-est / Bise, 230 = sud-ouest / Vent, 315 = nord-ouest / Joran).
+
 ## Tests
 
 Les tests d'intégration utilisent une vraie base PostgreSQL dédiée (`.env.test`, le nom doit contenir « test »).

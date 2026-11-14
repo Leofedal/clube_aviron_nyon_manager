@@ -13,6 +13,7 @@ import {
   TriangleAlert,
   Wind,
   CircleCheck,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CLUB } from "@/lib/club";
@@ -48,7 +49,18 @@ function WindArrow({ direction, className }: { direction: number; className?: st
   );
 }
 
-export function WeatherCard({ weather, sun, now = new Date() }: { weather: WeatherData | null; sun: SunData | null; now?: Date }) {
+export function WeatherCard({
+  weather,
+  sun,
+  now = new Date(),
+  simulation,
+}: {
+  weather: WeatherData | null;
+  sun: SunData | null;
+  now?: Date;
+  /** Libellé affiché quand le mode démonstration simule l'heure ou le vent */
+  simulation?: string | null;
+}) {
   const w = weather?.current;
   const level = w ? windLevel(w.speed, w.gusts) : null;
   const local = w ? localWindName(w.direction, w.speed) : null;
@@ -61,6 +73,11 @@ export function WeatherCard({ weather, sun, now = new Date() }: { weather: Weath
 
   return (
     <section aria-labelledby="weather-title" className="bg-card rounded-xl border">
+      {simulation && (
+        <div className="bg-live/12 text-live flex items-center gap-2 rounded-t-xl px-4 py-1.5 text-xs font-medium">
+          <FlaskConical className="size-3.5 shrink-0" /> {simulation} — données fictives pour la démonstration
+        </div>
+      )}
       <div className="flex items-center justify-between gap-2 border-b px-4 py-2.5">
         <h2 id="weather-title" className="flex items-center gap-2 text-sm font-semibold">
           <Wind className="text-muted-foreground size-4" /> Conditions sur le lac · {CLUB.location.label}

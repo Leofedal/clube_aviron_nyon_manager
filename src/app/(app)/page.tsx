@@ -18,8 +18,11 @@ import { CrewAvatars } from "@/components/outings/crew-avatars";
 import { DirectionLabel } from "@/components/outings/direction-label";
 import { WeatherCard } from "@/components/weather/weather-card";
 import { getSun, getWeather } from "@/lib/weather";
+import { applyDemoSimulation, type DemoParams } from "@/lib/demo-simulation";
 
-type SP = Promise<{ periode?: string; du?: string; au?: string; erreur?: string }>;
+type SP = Promise<
+  { periode?: string; du?: string; au?: string; erreur?: string } & DemoParams
+>;
 
 export default async function DashboardPage({ searchParams }: { searchParams: SP }) {
   const user = await requireUser();
@@ -35,7 +38,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
     getMonthlySeries(trend),
     getWeather(),
   ]);
-  const sun = getSun();
+  // Mode démonstration (DEMO_LOGIN="true") : ?heure=16:30&vent=35&rafales=50&direction=230
+  const demo = applyDemoSimulation(sp, weather);
+  const sun = getSun(demo.now);
   const label = periodLabel(range.period).toLowerCase();
   const suffix = range.period === "month" ? "ce mois-ci" : range.period === "custom" ? `du ${formatDate(range.from)} au ${range.toDate.split("-").reverse().join("/")}` : label;
 
@@ -74,7 +79,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
       </section>
 
       {/* Météo : vent en priorité, coucher du soleil */}
-      <WeatherCard weather={weather} sun={sun} />
+      <WeatherCard weather={demo.weather} sun={sun} now={demo.now} simulation={demo.label} />
 
       {/* Sorties en cours */}
       <section aria-labelledby="active-title">
