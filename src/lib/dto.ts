@@ -21,6 +21,7 @@ export interface OutingDTO {
   durationMin: number | null;
   status: "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
   entryMode: "LIVE" | "RETROSPECTIVE";
+  direction: "GENEVA" | "LAUSANNE" | null;
   notes: string | null;
   crew: CrewDTO[];
   createdById: string;
@@ -39,6 +40,7 @@ export function toOutingDTO(o: OutingWithDetails): OutingDTO {
     durationMin: o.returnAt ? durationMinutes(o.departureAt, o.returnAt) : null,
     status: o.status,
     entryMode: o.entryMode,
+    direction: o.direction,
     notes: o.notes,
     crew: sortCrew(o.crew).map((c) => ({
       userId: c.userId,

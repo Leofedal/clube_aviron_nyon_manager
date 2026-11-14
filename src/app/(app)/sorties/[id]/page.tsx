@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, CalendarClock, Flag, Pencil, PartyPopper, Ship, Timer, UserRound } from "lucide-react";
+import { ArrowLeft, CalendarClock, Compass, Flag, Pencil, PartyPopper, Ship, Timer, UserRound } from "lucide-react";
+import { DirectionLabel } from "@/components/outings/direction-label";
 import { requireUser } from "@/lib/auth/session";
 import { getOuting, getOutingAudit } from "@/lib/services/outing-queries";
 import { canCancelOuting, canEditOuting, canFinishOuting, isAdmin } from "@/lib/permissions";
@@ -90,7 +91,8 @@ export default async function OutingDetailPage({
         </Button>
       )}
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <Stat icon={Compass} label="Direction" value={<DirectionLabel direction={o.direction} />} />
         <Stat icon={CalendarClock} label="Départ" value={formatTime(outing.departureAt)} />
         <Stat icon={Flag} label="Retour" value={outing.returnAt ? formatTime(outing.returnAt) : "—"} />
         <Stat

@@ -7,4 +7,6 @@ export const CLUB = {
   /** Dimensions du fichier public/logo-club.png */
   logoWidth: 640,
   logoHeight: 340,
+  /** Position du club (port de Nyon) pour la météo et le coucher du soleil */
+  location: { label: "Nyon", latitude: 46.3833, longitude: 6.2398 },
 } as const;

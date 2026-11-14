@@ -34,6 +34,12 @@ enum EntryMode {
   RETROSPECTIVE // Sortie saisie après coup
 }
 
+/// Direction prise sur le Léman depuis Nyon
+enum OutingDirection {
+  GENEVA   // vers Genève
+  LAUSANNE // vers Lausanne
+}
+
 enum CrewRole {
   ROWER
   COXSWAIN
@@ -115,6 +121,8 @@ model Outing {
   distanceKm  Decimal?     @db.Decimal(6, 2)
   status      OutingStatus @default(IN_PROGRESS)
   entryMode   EntryMode
+  /// Direction (obligatoire pour toute nouvelle sortie ; nullable pour d'éventuelles données importées)
+  direction   OutingDirection?
   notes       String?
   /// Chevauchement autorisé explicitement par un administrateur (tracé dans AuditLog).
   overlapApproved Boolean  @default(false)

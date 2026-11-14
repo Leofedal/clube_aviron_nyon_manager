@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Activity, Gauge, Route, Users } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { getBoatStats, getClubSummary, getMemberStats, getMonthlySeries } from "@/lib/services/stats";
+import { getBoatStats, getClubSummary, getDirectionStats, getMemberStats, getMonthlySeries } from "@/lib/services/stats";
+import { DirectionLabel } from "@/components/outings/direction-label";
 import { periodLabel, rangeFromDates, resolvePeriod } from "@/lib/periods";
 import { toLocalDateString } from "@/lib/time";
 import { formatInt, formatKm } from "@/lib/utils";
@@ -25,12 +26,14 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
     range = { ...rangeFromDates(first ? toLocalDateString(first.departureAt) : range.toDate, range.toDate), period: "all" };
   }
 
-  const [summary, series, boats, members] = await Promise.all([
+  const [summary, series, boats, members, directions] = await Promise.all([
     getClubSummary(range),
     getMonthlySeries(range),
     getBoatStats(range),
     getMemberStats(range),
+    getDirectionStats(range),
   ]);
+  const dirTotal = directions.reduce((s, d) => s + d.outings, 0);
   const activeMembers = members.filter((m) => m.outings > 0);
   const byKm = [...activeMembers].sort((a, b) => b.km - a.km || b.outings - a.outings);
   const byOutings = [...activeMembers].sort((a, b) => b.outings - a.outings || b.km - a.km);
@@ -72,6 +75,38 @@ export default async function StatsPage({ searchParams }: { searchParams: Promis
               <MonthlyBarChart data={series.map((s) => ({ month: s.month, v: s.activeRowers }))} dataKey="v" unit="rameurs" height={260} />
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Directions</CardTitle>
+          <CardDescription>Sorties terminées vers Genève et vers Lausanne</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-3 sm:grid-cols-2">
+          {(["GENEVA", "LAUSANNE"] as const).map((dir) => {
+            const d = directions.find((x) => x.direction === dir);
+            const share = dirTotal ? Math.round(((d?.outings ?? 0) / dirTotal) * 100) : 0;
+            return (
+              <div key={dir} className="rounded-lg border p-3">
+                <div className="flex items-center justify-between">
+                  <DirectionLabel direction={dir} className="font-semibold" />
+                  <span className="text-muted-foreground text-sm tabular">{share} %</span>
+                </div>
+                <div className="bg-muted mt-2 h-2 overflow-hidden rounded-full">
+                  <div className="bg-chart-1 h-full rounded-full" style={{ width: `${share}%` }} />
+                </div>
+                <div className="text-muted-foreground mt-2 text-sm tabular">
+                  {formatInt(d?.outings ?? 0)} sorties · {formatKm(d?.km ?? 0)} km
+                </div>
+              </div>
+            );
+          })}
+          {directions.some((d) => d.direction === null) && (
+            <p className="text-muted-foreground text-xs sm:col-span-2">
+              {directions.find((d) => d.direction === null)!.outings} sortie(s) sans direction renseignée (données anciennes).
+            </p>
+          )}
         </CardContent>
       </Card>
 

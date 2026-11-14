@@ -206,3 +206,19 @@ export async function getFrequentCrewmates(userId: string, take = 5) {
     GROUP BY u.id ORDER BY n DESC, u."lastName" LIMIT ${take}`;
   return rows.map((r) => ({ ...r, n: num(r.n) }));
 }
+
+export interface DirectionStat {
+  direction: "GENEVA" | "LAUSANNE" | null;
+  outings: number;
+  km: number;
+}
+
+/** Répartition des sorties terminées par direction (Genève / Lausanne). */
+export async function getDirectionStats(range?: DateRange | null): Promise<DirectionStat[]> {
+  const rows = await prisma.$queryRaw<{ direction: "GENEVA" | "LAUSANNE" | null; outings: bigint; km: Prisma.Decimal }[]>`
+    SELECT o."direction" AS direction, COUNT(*) AS outings, COALESCE(SUM(o."distanceKm"), 0) AS km
+    FROM "Outing" o
+    WHERE o."status" = 'COMPLETED' ${inRange(range)}
+    GROUP BY o."direction"`;
+  return rows.map((r) => ({ direction: r.direction, outings: num(r.outings), km: num(r.km) }));
+}

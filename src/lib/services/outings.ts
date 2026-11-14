@@ -67,6 +67,7 @@ function snapshot(o: OutingWithCrew) {
     returnAt: o.returnAt,
     distanceKm: o.distanceKm == null ? null : Number(o.distanceKm),
     status: o.status,
+    direction: o.direction,
     notes: o.notes,
     overlapApproved: o.overlapApproved,
     crew: o.crew
@@ -309,6 +310,7 @@ export async function startOuting(actor: Actor, input: StartOutingInput, now: Da
         departureAt,
         status: "IN_PROGRESS",
         entryMode: "LIVE",
+        direction: data.direction,
         notes: data.notes ?? null,
         crew: { create: data.crew.map((c) => ({ userId: c.userId, crewRole: c.crewRole as CrewRole })) },
       },
@@ -431,6 +433,7 @@ export async function createRetrospectiveOuting(
         distanceKm: new Prisma.Decimal(data.distanceKm),
         status: "COMPLETED",
         entryMode: "RETROSPECTIVE",
+        direction: data.direction,
         notes: data.notes ?? null,
         overlapApproved: overridden,
         crew: { create: data.crew.map((c) => ({ userId: c.userId, crewRole: c.crewRole as CrewRole })) },
@@ -518,6 +521,7 @@ export async function updateOuting(actor: Actor, outingId: string, input: Update
       data: {
         boatId: boat.id,
         departureAt,
+        direction: data.direction,
         ...(before.status === "COMPLETED"
           ? { returnAt, distanceKm: new Prisma.Decimal(data.distanceKm as number) }
           : {}),

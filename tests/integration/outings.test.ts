@@ -27,7 +27,7 @@ describe("Mode A — départ en temps réel", () => {
     const boat = await makeBoat({ rowers: 2 });
     const o = await startOuting(
       actorOf(a),
-      { boatId: boat.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "10:55" },
+      { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "10:55" },
       NOW,
     );
     expect(o.status).toBe("IN_PROGRESS");
@@ -41,9 +41,9 @@ describe("Mode A — départ en temps réel", () => {
   it("refuse un bateau déjà sur l'eau", async () => {
     const [a, b] = [await makeUser(), await makeUser()];
     const boat = await makeBoat({ rowers: 1 });
-    await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
+    await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
     await expectDomainError(
-      startOuting(actorOf(b), { boatId: boat.id, crew: rowers(b.id), departureDate: TODAY, departureTime: "10:30" }, NOW),
+      startOuting(actorOf(b), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(b.id), departureDate: TODAY, departureTime: "10:30" }, NOW),
       "BOAT_BUSY",
     );
   });
@@ -52,7 +52,7 @@ describe("Mode A — départ en temps réel", () => {
     const a = await makeUser();
     const boat = await makeBoat({ rowers: 1 });
     await prisma.boat.update({ where: { id: boat.id }, data: { tags: ["Compétiteurs ou chevronnés seulement"] } });
-    const o = await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
+    const o = await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
     expect(o.status).toBe("IN_PROGRESS");
   });
 
@@ -60,7 +60,7 @@ describe("Mode A — départ en temps réel", () => {
     const a = await makeUser();
     const boat = await makeBoat({ rowers: 1, maintenance: "MAINTENANCE" });
     await expectDomainError(
-      startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW),
+      startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW),
       "BOAT_UNAVAILABLE",
     );
   });
@@ -69,7 +69,7 @@ describe("Mode A — départ en temps réel", () => {
     const [a, b, c] = [await makeUser(), await makeUser(), await makeUser()];
     const skiff = await makeBoat({ rowers: 1 });
     await expectDomainError(
-      startOuting(actorOf(a), { boatId: skiff.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "10:00" }, NOW),
+      startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: skiff.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "10:00" }, NOW),
       "CAPACITY",
     );
     const double = await makeBoat({ rowers: 2, cox: 0 });
@@ -77,6 +77,7 @@ describe("Mode A — départ en temps réel", () => {
       startOuting(
         actorOf(a),
         {
+          direction: "GENEVA" as const,
           boatId: double.id,
           crew: [...rowers(a.id, b.id), { userId: c.id, crewRole: "COXSWAIN" }],
           departureDate: TODAY,
@@ -91,9 +92,9 @@ describe("Mode A — départ en temps réel", () => {
   it("refuse un membre déjà en sortie sur un autre bateau", async () => {
     const a = await makeUser();
     const [b1, b2] = [await makeBoat({ rowers: 1 }), await makeBoat({ rowers: 1 })];
-    await startOuting(actorOf(a), { boatId: b1.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
+    await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: b1.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
     await expectDomainError(
-      startOuting(actorOf(a), { boatId: b2.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:05" }, NOW),
+      startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: b2.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:05" }, NOW),
       "CREW_BUSY",
     );
   });
@@ -103,11 +104,11 @@ describe("Mode A — départ en temps réel", () => {
     const boat = await makeBoat({ rowers: 1 });
     const results = await Promise.allSettled(
       users.map((u) =>
-        startOuting(actorOf(u), { boatId: boat.id, crew: rowers(u.id), departureDate: TODAY, departureTime: "10:59" }, NOW),
+        startOuting(actorOf(u), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(u.id), departureDate: TODAY, departureTime: "10:59" }, NOW),
       ),
     );
     expect(results.filter((r) => r.status === "fulfilled")).toHaveLength(1);
-    expect(await prisma.outing.count({ where: { boatId: boat.id, status: "IN_PROGRESS" } })).toBe(1);
+    expect(await prisma.outing.count({ where: { direction: "LAUSANNE" as const, boatId: boat.id, status: "IN_PROGRESS" } })).toBe(1);
     for (const r of results.filter((r) => r.status === "rejected")) {
       expect((r as PromiseRejectedResult).reason).toBeInstanceOf(DomainError);
     }
@@ -128,7 +129,7 @@ describe("Mode A — retour", () => {
     const boat = await makeBoat({ rowers: 2 });
     const o = await startOuting(
       actorOf(a),
-      { boatId: boat.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "08:30" },
+      { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id, b.id), departureDate: TODAY, departureTime: "08:30" },
       NOW,
     );
     return { a, b, boat, o };
@@ -140,9 +141,9 @@ describe("Mode A — retour", () => {
     expect(done.status).toBe("COMPLETED");
     expect(Number(done.distanceKm)).toBe(15);
     expect((done.returnAt!.getTime() - done.departureAt.getTime()) / 60000).toBe(90);
-    expect(await prisma.outing.count({ where: { boatId: boat.id, status: "IN_PROGRESS" } })).toBe(0);
+    expect(await prisma.outing.count({ where: { direction: "LAUSANNE" as const, boatId: boat.id, status: "IN_PROGRESS" } })).toBe(0);
     // le bateau peut repartir immédiatement
-    const again = await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:30" }, NOW);
+    const again = await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:30" }, NOW);
     expect(again.status).toBe("IN_PROGRESS");
   });
 
@@ -194,7 +195,7 @@ describe("Mode B — sortie passée", () => {
     const boat = await makeBoat({ rowers: 2 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:30", returnTime: "10:00", distanceKm: "14.5" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:30", returnTime: "10:00", distanceKm: "14.5" },
       NOW,
     );
     expect(o.status).toBe("COMPLETED");
@@ -208,7 +209,7 @@ describe("Mode B — sortie passée", () => {
     const boat = await makeBoat({ rowers: 1 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "23:15", returnTime: "00:45", distanceKm: "10" },
+      { direction: "LAUSANNE" as const, date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "23:15", returnTime: "00:45", distanceKm: "10" },
       NOW,
     );
     expect(o.departureAt.toISOString()).toBe("2026-11-12T22:15:00.000Z");
@@ -221,7 +222,7 @@ describe("Mode B — sortie passée", () => {
     await expectDomainError(
       createRetrospectiveOuting(
         actorOf(a),
-        { date: TODAY, boatId: boat.id, crew: rowers(a.id), departureTime: "12:00", returnTime: "13:00", distanceKm: "10" },
+        { direction: "LAUSANNE" as const, date: TODAY, boatId: boat.id, crew: rowers(a.id), departureTime: "12:00", returnTime: "13:00", distanceKm: "10" },
         NOW,
       ),
       "VALIDATION",
@@ -233,13 +234,13 @@ describe("Mode B — sortie passée", () => {
     const boat = await makeBoat({ rowers: 1 });
     await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "12" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "12" },
       NOW,
     );
     await expectDomainError(
       createRetrospectiveOuting(
         actorOf(b),
-        { date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "09:30", returnTime: "11:00", distanceKm: "10" },
+        { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "09:30", returnTime: "11:00", distanceKm: "10" },
         NOW,
       ),
       "OVERLAP",
@@ -247,7 +248,7 @@ describe("Mode B — sortie passée", () => {
     // Sorties bout à bout : autorisé
     const next = await createRetrospectiveOuting(
       actorOf(b),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "10:00", returnTime: "11:00", distanceKm: "10" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "10:00", returnTime: "11:00", distanceKm: "10" },
       NOW,
     );
     expect(next.status).toBe("COMPLETED");
@@ -256,11 +257,11 @@ describe("Mode B — sortie passée", () => {
   it("détecte un chevauchement avec une sortie en cours", async () => {
     const [a, b] = [await makeUser(), await makeUser()];
     const boat = await makeBoat({ rowers: 1 });
-    await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "09:00" }, NOW);
+    await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "09:00" }, NOW);
     await expectDomainError(
       createRetrospectiveOuting(
         actorOf(b),
-        { date: TODAY, boatId: boat.id, crew: rowers(b.id), departureTime: "09:30", returnTime: "10:30", distanceKm: "8" },
+        { direction: "LAUSANNE" as const, date: TODAY, boatId: boat.id, crew: rowers(b.id), departureTime: "09:30", returnTime: "10:30", distanceKm: "8" },
         NOW,
       ),
       "OVERLAP",
@@ -272,13 +273,13 @@ describe("Mode B — sortie passée", () => {
     const [b1, b2] = [await makeBoat({ rowers: 1 }), await makeBoat({ rowers: 1 })];
     await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-10", boatId: b1.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "12" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: b1.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "12" },
       NOW,
     );
     await expectDomainError(
       createRetrospectiveOuting(
         actorOf(a),
-        { date: "2026-11-10", boatId: b2.id, crew: rowers(a.id), departureTime: "09:00", returnTime: "10:30", distanceKm: "8" },
+        { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: b2.id, crew: rowers(a.id), departureTime: "09:00", returnTime: "10:30", distanceKm: "8" },
         NOW,
       ),
       "CREW_BUSY",
@@ -289,7 +290,7 @@ describe("Mode B — sortie passée", () => {
     const [a, b] = [await makeUser(), await makeUser()];
     const admin = await makeUser({ role: "ADMIN" });
     const boat = await makeBoat({ rowers: 1 });
-    const input = { date: "2026-11-10", boatId: boat.id, departureTime: "08:00", returnTime: "10:00", distanceKm: "12" };
+    const input = { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, departureTime: "08:00", returnTime: "10:00", distanceKm: "12" };
     await createRetrospectiveOuting(actorOf(a), { ...input, crew: rowers(a.id) }, NOW);
     await expectDomainError(
       createRetrospectiveOuting(actorOf(b), { ...input, crew: rowers(b.id), allowOverlap: true }, NOW),
@@ -307,7 +308,7 @@ describe("Mode B — sortie passée", () => {
       users.map((u, i) =>
         createRetrospectiveOuting(
           actorOf(u),
-          { date: "2026-11-10", boatId: boat.id, crew: rowers(u.id), departureTime: `08:${10 + i}`, returnTime: "09:30", distanceKm: "8" },
+          { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(u.id), departureTime: `08:${10 + i}`, returnTime: "09:30", distanceKm: "8" },
           NOW,
         ),
       ),
@@ -320,7 +321,7 @@ describe("Mode B — sortie passée", () => {
     const admin = await makeUser({ role: "ADMIN" });
     const gone = await makeUser({ isActive: false });
     const boat = await makeBoat({ rowers: 2 });
-    const input = { date: "2025-06-10", boatId: boat.id, departureTime: "08:00", returnTime: "10:00", distanceKm: "12", crew: rowers(a.id, gone.id) };
+    const input = { direction: "LAUSANNE" as const, date: "2025-06-10", boatId: boat.id, departureTime: "08:00", returnTime: "10:00", distanceKm: "12", crew: rowers(a.id, gone.id) };
     await expectDomainError(createRetrospectiveOuting(actorOf(a), input, NOW), "VALIDATION");
     const o = await createRetrospectiveOuting(actorOf(admin), input, NOW);
     expect(o.crew).toHaveLength(2);
@@ -333,13 +334,13 @@ describe("modification et annulation", () => {
     const boat = await makeBoat({ rowers: 2 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
+      { direction: "LAUSANNE" as const, date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
       NOW,
     );
     const updated = await updateOuting(
       actorOf(a),
       o.id,
-      { date: "2026-11-12", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:00", returnTime: "09:30", distanceKm: "10" },
+      { direction: "LAUSANNE" as const, date: "2026-11-12", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:00", returnTime: "09:30", distanceKm: "10" },
       NOW,
     );
     expect(updated.crew).toHaveLength(2);
@@ -349,7 +350,7 @@ describe("modification et annulation", () => {
       updateOuting(
         actorOf(outsider),
         o.id,
-        { date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:30", distanceKm: "1" },
+        { direction: "LAUSANNE" as const, date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:30", distanceKm: "1" },
         NOW,
       ),
       "FORBIDDEN",
@@ -363,9 +364,9 @@ describe("modification et annulation", () => {
     const a = await makeUser();
     const admin = await makeUser({ role: "ADMIN" });
     const boat = await makeBoat({ rowers: 1 });
-    const o = await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "09:00" }, NOW);
+    const o = await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "09:00" }, NOW);
     await cancelOuting(actorOf(admin), o.id, { reason: "Saisie en double" }, NOW);
-    expect(await prisma.outing.count({ where: { boatId: boat.id, status: "IN_PROGRESS" } })).toBe(0);
+    expect(await prisma.outing.count({ where: { direction: "LAUSANNE" as const, boatId: boat.id, status: "IN_PROGRESS" } })).toBe(0);
     expect(await prisma.auditLog.count({ where: { entityId: o.id, action: "CANCEL" } })).toBe(1);
   });
 
@@ -374,7 +375,7 @@ describe("modification et annulation", () => {
     const boat = await makeBoat({ rowers: 1 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
+      { direction: "LAUSANNE" as const, date: "2026-11-12", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
       NOW,
     );
     await expectDomainError(cancelOuting(actorOf(a), o.id, { reason: "erreur" }, NOW), "FORBIDDEN");

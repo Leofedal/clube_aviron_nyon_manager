@@ -142,6 +142,7 @@ async function main() {
     const departureTime = `${pad(startH)}:${pad(startM)}`;
     const returnTime = `${pad(Math.floor(endTotal / 60) % 24)}:${pad(endTotal % 60)}`;
     const notes = rand() < 0.25 ? pick(["Lac calme, très belle sortie", "Un peu de vent au retour", "Travail technique", "Sortie longue distance", "Brouillard au départ"]) : undefined;
+    const direction = (rand() < 0.5 ? "GENEVA" : "LAUSANNE") as "GENEVA" | "LAUSANNE";
     const author: Actor = { id: crew[0].userId, role: crew[0].userId === admin.id ? "ADMIN" : "MEMBER" };
 
     try {
@@ -150,7 +151,7 @@ async function main() {
         const { departureAt, returnAt } = resolveOutingTimes(date, departureTime, returnTime);
         const o = await startOuting(
           author,
-          { boatId: boat.id, crew, departureDate: date, departureTime, notes },
+          { boatId: boat.id, crew, direction, departureDate: date, departureTime, notes },
           new Date(departureAt.getTime() + 60000),
         );
         await finishOuting(
@@ -161,7 +162,7 @@ async function main() {
         );
       } else {
         await createRetrospectiveOuting(author, {
-          date, boatId: boat.id, crew, departureTime, returnTime, distanceKm: km, notes,
+          date, boatId: boat.id, crew, direction, departureTime, returnTime, distanceKm: km, notes,
         });
       }
       created++;
@@ -179,9 +180,9 @@ async function main() {
   console.log("→ 3 sorties en cours…");
   const now = Date.now();
   const live = [
-    { boat: "Filippi 2x", crew: [members[0], members[1]], minutesAgo: 35 },
-    { boat: "Empacher 4x", crew: [members[2], members[3], members[4], members[5]], minutesAgo: 70 },
-    { boat: "Albatros", crew: [members[6]], minutesAgo: 15 },
+    { boat: "Filippi 2x", crew: [members[0], members[1]], minutesAgo: 35, direction: "LAUSANNE" as const },
+    { boat: "Empacher 4x", crew: [members[2], members[3], members[4], members[5]], minutesAgo: 70, direction: "GENEVA" as const },
+    { boat: "Albatros", crew: [members[6]], minutesAgo: 15, direction: "LAUSANNE" as const },
   ];
   for (const l of live) {
     const boat = boats.find((b) => b.name === l.boat)!;
@@ -191,6 +192,7 @@ async function main() {
       {
         boatId: boat.id,
         crew: l.crew.map((u) => ({ userId: u.id, crewRole: "ROWER" as const })),
+        direction: l.direction,
         departureDate: toLocalDateString(dep),
         departureTime: toLocalTimeString(dep),
       },

@@ -41,7 +41,7 @@ export function RegistryFiltersBar({
   }, [q]);
 
   const period = sp.get("periode") ?? "";
-  const hasFilters = ["q", "bateau", "membre", "statut", "periode"].some((k) => sp.get(k));
+  const hasFilters = ["q", "bateau", "membre", "direction", "statut", "periode"].some((k) => sp.get(k));
 
   return (
     <div className="mb-4 flex flex-col gap-2">
@@ -67,6 +67,16 @@ export function RegistryFiltersBar({
           value={sp.get("membre") ?? ALL}
           onChange={(v) => update({ membre: v })}
           options={members.map((m) => ({ value: m.id, label: m.name }))}
+        />
+        <FilterSelect
+          label="Direction"
+          value={sp.get("direction") ?? ALL}
+          onChange={(v) => update({ direction: v })}
+          allLabel="Toutes"
+          options={[
+            { value: "GENEVA", label: "Genève" },
+            { value: "LAUSANNE", label: "Lausanne" },
+          ]}
         />
         <FilterSelect
           label="Statut"

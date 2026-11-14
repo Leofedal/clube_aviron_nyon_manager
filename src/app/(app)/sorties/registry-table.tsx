@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { OutingStatusBadge } from "@/components/outings/status-badge";
 import { Elapsed } from "@/components/outings/elapsed";
+import { DirectionLabel } from "@/components/outings/direction-label";
 import { crewNames, type OutingDTO } from "@/lib/dto";
 import { formatDate, formatDuration, formatTime } from "@/lib/time";
 import { cn, formatKm } from "@/lib/utils";
@@ -12,6 +13,7 @@ import type { RegistrySort } from "@/lib/services/outing-queries";
 const COLUMNS: { key: RegistrySort | null; label: string; className?: string }[] = [
   { key: "date", label: "Date" },
   { key: "boat", label: "Bateau" },
+  { key: "direction", label: "Direction" },
   { key: null, label: "Équipage" },
   { key: "departure", label: "Départ" },
   { key: "return", label: "Retour" },
@@ -103,6 +105,9 @@ export function RegistryTable({
                   <TableCell className="font-medium">
                     {o.boatName} <span className="text-muted-foreground text-xs font-normal">{o.boatTypeCode}</span>
                   </TableCell>
+                  <TableCell>
+                    <DirectionLabel direction={o.direction} />
+                  </TableCell>
                   <TableCell className="max-w-[18rem] truncate" title={crewNames(o.crew)}>
                     {crewNames(o.crew)}
                   </TableCell>
@@ -142,6 +147,7 @@ export function RegistryTable({
                       {o.boatName} <span className="text-muted-foreground text-xs font-normal">{o.boatTypeCode}</span>
                     </div>
                     <div className="text-muted-foreground truncate text-sm">{crewNames(o.crew)}</div>
+                    <DirectionLabel direction={o.direction} className="text-sm font-medium" />
                   </div>
                   <OutingStatusBadge status={o.status} />
                 </div>

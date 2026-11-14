@@ -88,6 +88,12 @@ barreurs, filtrage par date, recalcul après correction, sorties annulées exclu
   - `CHECK` : retour > départ, distance ≥ 0, sortie terminée ⇒ retour + distance.
 - **Chevauchement autorisé** uniquement par un administrateur, explicitement (`overlapApproved`), et tracé
   dans le journal d'audit (`OVERLAP_OVERRIDE`).
+- **Direction** obligatoire pour chaque sortie : Genève ou Lausanne (filtre du registre, statistiques, export CSV).
+- **Météo du tableau de bord** : vent en priorité (vitesse, rafales, provenance, Bise / Vent / Joran, niveau indicatif
+  pour l'aviron, prochaines heures), coucher du soleil et température. Source : [Open-Meteo](https://open-meteo.com)
+  (gratuit, sans clé, modèles MétéoSuisse inclus), mis en cache 10 minutes côté serveur. Si le service est indisponible,
+  le tableau de bord s'affiche normalement avec un message. Le coucher du soleil est calculé localement
+  (`src/lib/sun.ts`). Seuils de vent modifiables dans `src/lib/wind.ts`, position du club dans `src/lib/club.ts`.
 - **Étiquettes d'avertissement** sur les bateaux (ex. « Compétiteurs ou chevronnés seulement ») : définies par les
   administrateurs, affichées au choix du bateau et dans les formulaires. Purement informatives, elles ne bloquent pas la sortie.
 - **Disponibilité « Sur l'eau »** dérivée des sorties en cours, jamais stockée. Les bateaux en maintenance ou

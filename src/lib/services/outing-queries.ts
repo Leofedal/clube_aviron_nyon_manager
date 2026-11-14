@@ -2,7 +2,7 @@ import { Prisma, type OutingStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { DateRange } from "@/lib/periods";
 
-export const REGISTRY_SORTS = ["date", "boat", "departure", "return", "duration", "km", "status"] as const;
+export const REGISTRY_SORTS = ["date", "boat", "direction", "departure", "return", "duration", "km", "status"] as const;
 export type RegistrySort = (typeof REGISTRY_SORTS)[number];
 export const REGISTRY_STATUS_FILTERS = ["", "IN_PROGRESS", "COMPLETED", "CANCELLED", "ALL"] as const;
 export type RegistryStatusFilter = (typeof REGISTRY_STATUS_FILTERS)[number];
@@ -11,6 +11,7 @@ export interface RegistryFilters {
   q?: string;
   boatId?: string;
   memberId?: string;
+  direction?: "GENEVA" | "LAUSANNE";
   status?: RegistryStatusFilter;
   range?: DateRange | null;
   sort?: RegistrySort;
@@ -45,6 +46,7 @@ function buildWhere(f: RegistryFilters): Prisma.Sql {
   if (status === "") conds.push(Prisma.sql`o."status" <> 'CANCELLED'`);
   else if (status !== "ALL") conds.push(Prisma.sql`o."status" = ${status}::"OutingStatus"`);
   if (f.boatId) conds.push(Prisma.sql`o."boatId" = ${f.boatId}`);
+  if (f.direction) conds.push(Prisma.sql`o."direction" = ${f.direction}::"OutingDirection"`);
   if (f.memberId)
     conds.push(Prisma.sql`EXISTS (SELECT 1 FROM "OutingCrew" c WHERE c."outingId" = o.id AND c."userId" = ${f.memberId})`);
   if (f.range) {
@@ -74,6 +76,7 @@ function buildOrder(sort: RegistrySort, dir: "asc" | "desc"): Prisma.Sql {
     departure: Prisma.sql`(o."departureAt" AT TIME ZONE 'Europe/Zurich')::time`,
     return: Prisma.sql`o."returnAt"`,
     boat: Prisma.sql`b."name"`,
+    direction: Prisma.sql`o."direction"`,
     duration: Prisma.sql`(o."returnAt" - o."departureAt")`,
     km: Prisma.sql`o."distanceKm"`,
     status: Prisma.sql`o."status"`,

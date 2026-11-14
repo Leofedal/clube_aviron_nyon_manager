@@ -28,6 +28,7 @@ export default async function AddPastOutingPage() {
           date: toLocalDateString(new Date()),
           boatId: "",
           crew: [{ userId: user.id, crewRole: "ROWER" }],
+          direction: null,
           departureTime: "",
           returnTime: "",
           distanceKm: "",

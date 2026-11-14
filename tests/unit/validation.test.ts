@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { retrospectiveOutingSchema, finishOutingSchema } from "@/lib/validation/outing";
 
 const valid = {
-  date: "2026-11-14",
+  direction: "GENEVA" as const,
+        date: "2026-11-14",
   boatId: "b",
   crew: [{ userId: "u1", crewRole: "ROWER" }],
   departureTime: "08:30",
@@ -49,5 +50,16 @@ describe("étiquettes des bateaux", () => {
   it("aucune étiquette par défaut, 5 au maximum", () => {
     expect(boatSchema.parse(base).tags).toEqual([]);
     expect(boatSchema.safeParse({ ...base, tags: ["a", "b", "c", "d", "e", "f"] }).success).toBe(false);
+  });
+});
+
+describe("direction de la sortie", () => {
+  it("est obligatoire (Genève ou Lausanne)", () => {
+    const { direction: _omit, ...withoutDirection } = valid;
+    void _omit;
+    const r = retrospectiveOutingSchema.safeParse(withoutDirection);
+    expect(r.success).toBe(false);
+    expect(r.error?.issues[0].message).toBe("Choisissez la direction : Genève ou Lausanne");
+    expect(retrospectiveOutingSchema.safeParse({ ...valid, direction: "MONTREUX" }).success).toBe(false);
   });
 });

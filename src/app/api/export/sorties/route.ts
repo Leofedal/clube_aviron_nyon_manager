@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const filters = parseRegistryParams(sp);
   const outings = await listOutingsForExport(filters);
 
-  const header = ["Date", "Bateau", "Type", "Équipage", "Barreur", "Départ", "Retour", "Durée (min)", "Km", "Statut", "Mode de saisie", "Commentaire", "Saisie par", "Identifiant"];
+  const header = ["Date", "Bateau", "Type", "Direction", "Équipage", "Barreur", "Départ", "Retour", "Durée (min)", "Km", "Statut", "Mode de saisie", "Commentaire", "Saisie par", "Identifiant"];
   const lines = [header.map(cell).join(";")];
   for (const o of outings) {
     const crew = sortCrew(o.crew);
@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
         formatDate(o.departureAt),
         o.boat.name,
         o.boat.boatType.code,
+        o.direction === "GENEVA" ? "Genève" : o.direction === "LAUSANNE" ? "Lausanne" : "",
         crew.filter((c) => c.crewRole === "ROWER").map((c) => `${c.user.firstName} ${c.user.lastName}`).join(", "),
         crew.filter((c) => c.crewRole === "COXSWAIN").map((c) => `${c.user.firstName} ${c.user.lastName}`).join(", "),
         formatTime(o.departureAt),

@@ -25,6 +25,13 @@ export const distanceSchema = z.preprocess(
     .transform((n) => Math.round(n * 100) / 100),
 );
 
+export const DIRECTIONS = ["GENEVA", "LAUSANNE"] as const;
+export const DIRECTION_LABELS: Record<(typeof DIRECTIONS)[number], string> = { GENEVA: "Genève", LAUSANNE: "Lausanne" };
+export const directionSchema = z.enum(DIRECTIONS, {
+  required_error: "Choisissez la direction : Genève ou Lausanne",
+  invalid_type_error: "Choisissez la direction : Genève ou Lausanne",
+});
+
 export const crewMemberSchema = z.object({
   userId: z.string().min(1),
   crewRole: z.enum(["ROWER", "COXSWAIN"]),
@@ -55,6 +62,7 @@ const notesSchema = z
 export const startOutingSchema = z.object({
   boatId: z.string().min(1, "Choisissez un bateau"),
   crew: crewSchema,
+  direction: directionSchema,
   departureDate: dateStr,
   departureTime: timeStr,
   notes: notesSchema,
@@ -73,6 +81,7 @@ export const retrospectiveOutingSchema = z.object({
   date: dateStr,
   boatId: z.string().min(1, "Choisissez un bateau"),
   crew: crewSchema,
+  direction: directionSchema,
   departureTime: timeStr,
   returnTime: timeStr,
   distanceKm: distanceSchema,
@@ -86,6 +95,7 @@ export const updateOutingSchema = z.object({
   date: dateStr,
   boatId: z.string().min(1, "Choisissez un bateau"),
   crew: crewSchema,
+  direction: directionSchema,
   departureTime: timeStr,
   returnTime: timeStr.optional(),
   distanceKm: distanceSchema.optional(),

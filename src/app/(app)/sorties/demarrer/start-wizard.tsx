@@ -13,6 +13,7 @@ import { BoatPicker } from "@/components/outings/boat-picker";
 import { CrewPicker, type PickerMemberDTO } from "@/components/outings/crew-picker";
 import { startOutingAction } from "@/app/actions/outings";
 import { BoatTagsWarning } from "@/components/boats/boat-tags";
+import { DirectionPicker, type Direction } from "@/components/outings/direction-picker";
 import { CLUB_TZ } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { BoatOptionDTO } from "@/lib/picker-data";
@@ -44,6 +45,7 @@ export function StartOutingWizard({
   const [time, setTime] = useState(serverNow.time);
   const [timeEdited, setTimeEdited] = useState(false);
   const [notes, setNotes] = useState("");
+  const [direction, setDirection] = useState<Direction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -76,9 +78,13 @@ export function StartOutingWizard({
 
   function submit() {
     if (!boat) return;
+    if (!direction) {
+      setError("Choisissez la direction : Genève ou Lausanne.");
+      return;
+    }
     setError(null);
     startTransition(async () => {
-      const res = await startOutingAction({ boatId: boat.id, crew, departureDate: date, departureTime: time, notes });
+      const res = await startOutingAction({ boatId: boat.id, crew, direction, departureDate: date, departureTime: time, notes });
       if (res.ok) {
         toast.success(`Bonne sortie ! ${boat.name} est enregistré sur l'eau.`);
         router.push(`/sorties/${res.data.id}?nouveau=1`);
@@ -169,6 +175,17 @@ export function StartOutingWizard({
             Confirmez le départ
           </h2>
           <BoatTagsWarning boatName={boat.name} tags={boat.tags} />
+          <div className="grid gap-2">
+            <Label>Direction</Label>
+            <DirectionPicker
+              value={direction}
+              onChange={(d) => {
+                setDirection(d);
+                setError(null);
+              }}
+              invalid={!!error && !direction}
+            />
+          </div>
           <Card>
             <CardContent className="grid gap-3 text-sm">
               <div className="flex justify-between gap-4">
@@ -220,10 +237,13 @@ export function StartOutingWizard({
               {error}
             </p>
           )}
-          <Button size="xl" className="w-full" onClick={submit} disabled={pending}>
+          <Button size="xl" className="w-full" onClick={submit} disabled={pending || !direction}>
             {pending ? <Loader2 className="animate-spin" /> : <Play />}
             Démarrer la sortie
           </Button>
+          {!direction && (
+            <p className="text-muted-foreground -mt-2 text-center text-sm">Choisissez d&apos;abord la direction.</p>
+          )}
           <p className="text-muted-foreground flex items-center justify-center gap-1.5 text-center text-xs">
             <Check className="size-3.5" /> Le bateau sera signalé comme occupé jusqu&apos;à votre retour.
           </p>

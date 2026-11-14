@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrewPicker, type PickerMemberDTO } from "@/components/outings/crew-picker";
 import { BoatTagsWarning } from "@/components/boats/boat-tags";
+import { DirectionPicker } from "@/components/outings/direction-picker";
 import { createRetrospectiveOutingAction, updateOutingAction } from "@/app/actions/outings";
 import { updateOutingSchema, type UpdateOutingData, type UpdateOutingInput } from "@/lib/validation/outing";
 import { formatDuration } from "@/lib/time";
@@ -41,7 +42,8 @@ export function OutingForm({
   members: PickerMemberDTO[];
   currentUserId: string;
   isAdmin: boolean;
-  defaults: UpdateOutingInput;
+  /** La direction peut être vide à la création : le membre doit la choisir. */
+  defaults: Omit<UpdateOutingInput, "direction"> & { direction?: UpdateOutingInput["direction"] | null };
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -57,7 +59,7 @@ export function OutingForm({
             { path: ["distanceKm"], message: "Indiquez la distance parcourue" },
           ),
     ),
-    defaultValues: defaults,
+    defaultValues: { ...defaults, direction: defaults.direction ?? undefined } as UpdateOutingInput,
   });
   const { register, control, handleSubmit, watch, formState, setError } = form;
   const [boatId, depRaw, retRaw] = watch(["boatId", "departureTime", "returnTime"]);
@@ -137,6 +139,18 @@ export function OutingForm({
       </section>
 
       {boat && <BoatTagsWarning boatName={boat.name} tags={boat.tags} />}
+
+      <section className="grid gap-2">
+        <Label>Direction</Label>
+        <Controller
+          control={control}
+          name="direction"
+          render={({ field }) => (
+            <DirectionPicker value={field.value} onChange={field.onChange} invalid={!!formState.errors.direction} />
+          )}
+        />
+        {formState.errors.direction && <p className="text-destructive text-sm">{formState.errors.direction.message}</p>}
+      </section>
 
       <section className="grid gap-2">
         <Label>Équipage</Label>

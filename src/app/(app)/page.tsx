@@ -15,6 +15,9 @@ import { PeriodFilter } from "@/components/stats/period-filter";
 import { MonthlyBarChart } from "@/components/stats/charts";
 import { Elapsed } from "@/components/outings/elapsed";
 import { CrewAvatars } from "@/components/outings/crew-avatars";
+import { DirectionLabel } from "@/components/outings/direction-label";
+import { WeatherCard } from "@/components/weather/weather-card";
+import { getSun, getWeather } from "@/lib/weather";
 
 type SP = Promise<{ periode?: string; du?: string; au?: string; erreur?: string }>;
 
@@ -24,13 +27,15 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
   const range = resolvePeriod({ period: sp.periode, from: sp.du, to: sp.au }, "month");
   const trend = resolvePeriod({ period: "12m" });
 
-  const [summary, onWater, active, recent, series] = await Promise.all([
+  const [summary, onWater, active, recent, series, weather] = await Promise.all([
     getClubSummary(range),
     countBoatsOnWater(),
     getActiveOutings(),
     getRecentCompletedOutings(6),
     getMonthlySeries(trend),
+    getWeather(),
   ]);
+  const sun = getSun();
   const label = periodLabel(range.period).toLowerCase();
   const suffix = range.period === "month" ? "ce mois-ci" : range.period === "custom" ? `du ${formatDate(range.from)} au ${range.toDate.split("-").reverse().join("/")}` : label;
 
@@ -67,6 +72,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
           </Link>
         </Button>
       </section>
+
+      {/* Météo : vent en priorité, coucher du soleil */}
+      <WeatherCard weather={weather} sun={sun} />
 
       {/* Sorties en cours */}
       <section aria-labelledby="active-title">
@@ -111,7 +119,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
                       <span className="text-muted-foreground truncate text-sm">{crewNames(o.crew)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground text-sm">Départ {formatTime(new Date(o.departureAt))}</span>
+                      <span className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-sm">
+                        Départ {formatTime(new Date(o.departureAt))}
+                        <DirectionLabel direction={o.direction} className="text-foreground font-medium" />
+                      </span>
                       {mine ? (
                         <Button asChild size="sm">
                           <Link href={`/sorties/${o.id}/terminer`}>
@@ -190,7 +201,8 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
                         <div className="min-w-0 flex-1">
                           <div className="truncate text-sm font-medium">{o.boatName}</div>
                           <div className="text-muted-foreground truncate text-xs">
-                            {formatDate(new Date(o.departureAt))} · {crewNames(o.crew)}
+                            {formatDate(new Date(o.departureAt))}
+                            {o.direction && ` · ${o.direction === "GENEVA" ? "Genève" : "Lausanne"}`} · {crewNames(o.crew)}
                           </div>
                         </div>
                         <div className="text-right">

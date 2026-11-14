@@ -29,6 +29,7 @@ export function parseRegistryParams(sp: RawParams): RegistryFilters & { period: 
     q: one(sp.q).slice(0, 100) || undefined,
     boatId: one(sp.bateau) || undefined,
     memberId: one(sp.membre) || undefined,
+    direction: one(sp.direction) === "GENEVA" || one(sp.direction) === "LAUSANNE" ? (one(sp.direction) as "GENEVA" | "LAUSANNE") : undefined,
     status: REGISTRY_STATUS_FILTERS.includes(status) ? status : "",
     sort: REGISTRY_SORTS.includes(sort) ? sort : "date",
     dir: one(sp.ordre) === "asc" ? "asc" : "desc",

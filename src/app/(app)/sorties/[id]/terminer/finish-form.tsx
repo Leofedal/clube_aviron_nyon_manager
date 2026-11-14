@@ -15,6 +15,7 @@ import { finishOutingAction } from "@/app/actions/outings";
 import { finishOutingSchema, type FinishOutingData, type FinishOutingInput } from "@/lib/validation/outing";
 import { CLUB_TZ, formatDuration, formatTime } from "@/lib/time";
 import { crewNames, type OutingDTO } from "@/lib/dto";
+import { DirectionLabel } from "@/components/outings/direction-label";
 import { cn } from "@/lib/utils";
 
 const QUICK_KM = [6, 8, 10, 12, 15, 20];
@@ -76,6 +77,10 @@ export function FinishOutingForm({ outing, defaults }: { outing: OutingDTO; defa
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Équipage</span>
             <span className="text-right font-medium">{crewNames(outing.crew)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Direction</span>
+            <DirectionLabel direction={outing.direction} className="font-medium" />
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Départ</span>

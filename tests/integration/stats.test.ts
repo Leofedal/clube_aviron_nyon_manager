@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { cancelOuting, createRetrospectiveOuting, finishOuting, startOuting, updateOuting } from "@/lib/services/outings";
-import { getBoatStats, getClubSummary, getMemberStats, getMemberSummary, getMonthlySeries } from "@/lib/services/stats";
+import { getBoatStats, getClubSummary, getDirectionStats, getMemberStats, getMemberSummary, getMonthlySeries } from "@/lib/services/stats";
 import { listOutings } from "@/lib/services/outing-queries";
 import { rangeFromDates, resolvePeriod } from "@/lib/periods";
 import { actorOf, makeBoat, makeUser, resetDb, rowers } from "../helpers";
@@ -24,7 +24,7 @@ describe("calcul des distances", () => {
     const { users, boat } = await crewOfFour();
     await createRetrospectiveOuting(
       actorOf(users[0]),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(...users.map((u) => u.id)), departureTime: "08:00", returnTime: "09:30", distanceKm: "15" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(...users.map((u) => u.id)), departureTime: "08:00", returnTime: "09:30", distanceKm: "15" },
       NOW,
     );
     const club = await getClubSummary(NOV);
@@ -42,6 +42,7 @@ describe("calcul des distances", () => {
     await createRetrospectiveOuting(
       actorOf(users[0]),
       {
+        direction: "GENEVA" as const,
         date: "2026-11-10",
         boatId: boat.id,
         crew: [...rowers(...users.map((u) => u.id)), { userId: cox.id, crewRole: "COXSWAIN" }],
@@ -60,13 +61,13 @@ describe("calcul des distances", () => {
   it("une sortie en cours ne compte pas ; elle compte dès qu'elle est terminée (comme une rétrospective)", async () => {
     const a = await makeUser();
     const [b1, b2] = [await makeBoat({ rowers: 1 }), await makeBoat({ rowers: 1 })];
-    const live = await startOuting(actorOf(a), { boatId: b1.id, crew: rowers(a.id), departureDate: "2026-11-14", departureTime: "08:00" }, NOW);
+    const live = await startOuting(actorOf(a), { direction: "LAUSANNE" as const, boatId: b1.id, crew: rowers(a.id), departureDate: "2026-11-14", departureTime: "08:00" }, NOW);
     expect((await getClubSummary(NOV)).km).toBe(0);
     await finishOuting(actorOf(a), live.id, { returnDate: "2026-11-14", returnTime: "10:00", distanceKm: "10" }, NOW);
     const b = await makeUser();
     await createRetrospectiveOuting(
       actorOf(b),
-      { date: "2026-11-13", boatId: b2.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "10" },
+      { direction: "LAUSANNE" as const, date: "2026-11-13", boatId: b2.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "10:00", distanceKm: "10" },
       NOW,
     );
     const club = await getClubSummary(NOV);
@@ -79,7 +80,7 @@ describe("calcul des distances", () => {
     const boat = await makeBoat({ rowers: 1 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "9" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "9" },
       NOW,
     );
     await cancelOuting(actorOf(admin), o.id, { reason: "Doublon" }, NOW);
@@ -96,14 +97,14 @@ describe("calcul des distances", () => {
     const boat = await makeBoat({ rowers: 2 });
     const o = await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "8" },
       NOW,
     );
     expect((await getMemberSummary(b.id, NOV))?.km).toBe(0);
     await updateOuting(
       actorOf(admin),
       o.id,
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "11" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(a.id, b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "11" },
       NOW,
     );
     expect((await getClubSummary(NOV)).km).toBe(11);
@@ -113,7 +114,7 @@ describe("calcul des distances", () => {
     await updateOuting(
       actorOf(admin),
       o.id,
-      { date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "11" },
+      { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: boat.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "11" },
       NOW,
     );
     expect((await getMemberSummary(a.id, NOV))?.km).toBe(0);
@@ -128,13 +129,13 @@ describe("filtrage par date", () => {
     // Départ le 31/10 à 23:30 (Zurich), retour le 01/11 → compte en octobre
     await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-10-31", boatId: boat.id, crew: rowers(a.id), departureTime: "23:30", returnTime: "00:30", distanceKm: "6" },
+      { direction: "LAUSANNE" as const, date: "2026-10-31", boatId: boat.id, crew: rowers(a.id), departureTime: "23:30", returnTime: "00:30", distanceKm: "6" },
       NOW,
     );
     // Départ le 01/11 à 00:30 local (= 31/10 23:30 UTC) → compte en novembre
     await createRetrospectiveOuting(
       actorOf(a),
-      { date: "2026-11-01", boatId: boat.id, crew: rowers(a.id), departureTime: "00:45", returnTime: "02:00", distanceKm: "4" },
+      { direction: "LAUSANNE" as const, date: "2026-11-01", boatId: boat.id, crew: rowers(a.id), departureTime: "00:45", returnTime: "02:00", distanceKm: "4" },
       NOW,
     );
     expect((await getClubSummary(rangeFromDates("2026-10-01", "2026-10-31"))).km).toBe(6);
@@ -152,13 +153,28 @@ describe("filtrage par date", () => {
   it("registre : filtres membre, bateau, recherche et tri par km", async () => {
     const [a, b] = [await makeUser({ firstName: "Juliette" }), await makeUser({ firstName: "Marc" })];
     const [b1, b2] = [await makeBoat({ rowers: 1, name: "Filippi" }), await makeBoat({ rowers: 1, name: "Empacher" })];
-    await createRetrospectiveOuting(actorOf(a), { date: "2026-11-10", boatId: b1.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "5" }, NOW);
-    await createRetrospectiveOuting(actorOf(b), { date: "2026-11-11", boatId: b2.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "12" }, NOW);
+    await createRetrospectiveOuting(actorOf(a), { direction: "LAUSANNE" as const, date: "2026-11-10", boatId: b1.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "5" }, NOW);
+    await createRetrospectiveOuting(actorOf(b), { direction: "LAUSANNE" as const, date: "2026-11-11", boatId: b2.id, crew: rowers(b.id), departureTime: "08:00", returnTime: "09:00", distanceKm: "12" }, NOW);
     expect((await listOutings({ memberId: a.id })).total).toBe(1);
-    expect((await listOutings({ boatId: b2.id })).items[0].boat.name).toBe("Empacher");
+    expect((await listOutings({ direction: "LAUSANNE" as const, boatId: b2.id })).items[0].boat.name).toBe("Empacher");
     expect((await listOutings({ q: "juliet" })).total).toBe(1);
     expect((await listOutings({ q: "filip" })).total).toBe(1);
     const sorted = await listOutings({ sort: "km", dir: "desc" });
     expect(sorted.items.map((o) => Number(o.distanceKm))).toEqual([12, 5]);
+  });
+});
+
+describe("directions", () => {
+  it("répartit sorties et km par direction, et filtre le registre", async () => {
+    const a = await makeUser();
+    const boat = await makeBoat({ rowers: 1 });
+    const base = { boatId: boat.id, crew: rowers(a.id), departureTime: "08:00", returnTime: "09:00" };
+    await createRetrospectiveOuting(actorOf(a), { ...base, date: "2026-11-10", direction: "GENEVA" as const, distanceKm: "10" }, NOW);
+    await createRetrospectiveOuting(actorOf(a), { ...base, date: "2026-11-11", direction: "GENEVA" as const, distanceKm: "12" }, NOW);
+    await createRetrospectiveOuting(actorOf(a), { ...base, date: "2026-11-12", direction: "LAUSANNE" as const, distanceKm: "8" }, NOW);
+    const stats = await getDirectionStats(NOV);
+    expect(stats.find((d) => d.direction === "GENEVA")).toMatchObject({ outings: 2, km: 22 });
+    expect(stats.find((d) => d.direction === "LAUSANNE")).toMatchObject({ outings: 1, km: 8 });
+    expect((await listOutings({ direction: "LAUSANNE" })).total).toBe(1);
   });
 });

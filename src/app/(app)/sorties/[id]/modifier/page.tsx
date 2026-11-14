@@ -50,6 +50,7 @@ export default async function EditOutingPage({ params }: { params: Promise<{ id:
           date: toLocalDateString(outing.departureAt),
           boatId: outing.boatId,
           crew: outing.crew.map((c) => ({ userId: c.userId, crewRole: c.crewRole })),
+          direction: outing.direction,
           departureTime: toLocalTimeString(outing.departureAt),
           returnTime: outing.returnAt ? toLocalTimeString(outing.returnAt) : undefined,
           distanceKm: outing.distanceKm != null ? String(outing.distanceKm) : undefined,
