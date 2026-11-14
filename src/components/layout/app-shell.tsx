@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CalendarPlus, Menu, Play, Plus, Waves } from "lucide-react";
+import { CalendarPlus, Menu, Play, Plus } from "lucide-react";
+import { CLUB } from "@/lib/club";
+import { ClubLogo } from "./club-logo";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -30,12 +32,10 @@ export function AppShell({
       {/* Sidebar (ordinateur / tablette) */}
       <aside className="bg-sidebar text-sidebar-foreground border-sidebar-border sticky top-0 hidden h-dvh flex-col border-r md:flex">
         <Link href="/" className="flex items-center gap-2.5 px-4 py-4">
-          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-lg">
-            <Waves className="size-4.5" />
-          </span>
-          <span className="leading-tight">
-            <span className="block text-sm font-semibold">Rowing Club</span>
-            <span className="text-muted-foreground block text-xs">Gestion des sorties</span>
+          <ClubLogo className="h-10" priority />
+          <span className="min-w-0 leading-tight">
+            <span className="block text-sm font-semibold">{CLUB.name}</span>
+            <span className="text-muted-foreground block text-xs">{CLUB.appName}</span>
           </span>
         </Link>
         <div className="flex flex-col gap-1.5 px-3 pb-3">
@@ -91,10 +91,8 @@ export function AppShell({
         {/* Barre supérieure mobile */}
         <header className="bg-background/85 sticky top-0 z-30 flex h-14 items-center gap-2 border-b px-4 backdrop-blur md:hidden">
           <Link href="/" className="flex items-center gap-2">
-            <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md">
-              <Waves className="size-4" />
-            </span>
-            <span className="text-sm font-semibold">Rowing Club</span>
+            <ClubLogo className="h-9" priority />
+            <span className="text-sm font-semibold">{CLUB.name}</span>
           </Link>
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />

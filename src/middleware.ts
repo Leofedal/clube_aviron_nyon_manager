@@ -18,5 +18,6 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.svg|api/).*)"],
+  // Fichiers statiques (logo, icônes) accessibles sans connexion
+  matcher: ["/((?!_next/static|_next/image|api/|.*\\.(?:png|ico|svg|jpg|jpeg|webp|webmanifest)$).*)"],
 };

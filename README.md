@@ -1,4 +1,4 @@
-# Rowing Club Manager
+# Club Aviron de Nyon — Gestion des sorties
 
 Application web de gestion des sorties d'un club d'aviron : registre des sorties (remplace le carnet papier),
 fiches bateaux et membres, tableau de bord et statistiques. Interface en français, responsive
