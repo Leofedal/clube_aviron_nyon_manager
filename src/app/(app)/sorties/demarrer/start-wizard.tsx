@@ -141,7 +141,7 @@ export function StartOutingWizard({
             <h2 id="step-crew" className="font-medium">
               Qui est dans le bateau ?
             </h2>
-            <button type="button" onClick={() => setStep(0)} className="text-primary text-sm hover:underline">
+            <button type="button" onClick={() => setStep(0)} className="text-link text-sm hover:underline">
               {boat.name} ({boat.typeCode}) · changer
             </button>
           </div>

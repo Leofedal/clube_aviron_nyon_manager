@@ -19,7 +19,7 @@ export function UserMenu({ user }: { user: SessionUser }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="rounded-full" aria-label="Mon compte">
-          <span className="bg-primary text-primary-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">
+          <span className="bg-navy text-navy-foreground flex size-8 items-center justify-center rounded-full text-xs font-semibold">
             {initials(user.firstName, user.lastName)}
           </span>
         </Button>

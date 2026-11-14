@@ -158,7 +158,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
               <Gauge className="text-muted-foreground size-4" /> Kilomètres par mois
             </CardTitle>
             <CardAction>
-              <Link href="/statistiques" className="text-primary text-sm hover:underline">
+              <Link href="/statistiques" className="text-link text-sm hover:underline">
                 Statistiques
               </Link>
             </CardAction>
@@ -172,7 +172,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: SP
           <CardHeader>
             <CardTitle className="text-base">Dernières sorties terminées</CardTitle>
             <CardAction>
-              <Link href="/sorties" className="text-primary text-sm hover:underline">
+              <Link href="/sorties" className="text-link text-sm hover:underline">
                 Registre
               </Link>
             </CardAction>

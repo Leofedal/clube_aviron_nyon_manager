@@ -61,7 +61,7 @@ export default async function MembersPage({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <PeriodFilter value={range.period} from={range.fromDate} to={range.toDate} options={["30d", "month", "year", "12m", "all", "custom"]} />
         {inactiveCount > 0 && (
-          <Link href={`/membres?${toggleHref.toString()}`} className="text-primary text-sm hover:underline">
+          <Link href={`/membres?${toggleHref.toString()}`} className="text-link text-sm hover:underline">
             {showInactive ? "Masquer les anciens membres" : `Afficher les anciens membres (${inactiveCount})`}
           </Link>
         )}

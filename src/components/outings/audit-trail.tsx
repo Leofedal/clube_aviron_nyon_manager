@@ -66,7 +66,7 @@ export function AuditTrail({
             const reason = (e.newValues as { reason?: string } | null)?.reason;
             return (
               <li key={e.id} className="text-sm">
-                <span className="bg-primary absolute -left-[5px] mt-1.5 size-2.5 rounded-full" />
+                <span className="bg-navy absolute -left-[5px] mt-1.5 size-2.5 rounded-full" />
                 <div className="font-medium">{actionLabel(e.action)}</div>
                 <div className="text-muted-foreground text-xs">
                   {formatDateTime(e.createdAt)} · {e.actor ? `${e.actor.firstName} ${e.actor.lastName}` : "système"}

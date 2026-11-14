@@ -12,15 +12,19 @@
   --card-foreground: oklch(0.22 0.04 260);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.22 0.04 260);
-  --primary: oklch(0.33 0.09 260); /* bleu marine */
-  --primary-foreground: oklch(0.985 0.005 250);
+  /* Rouge du logo, un cran plus profond (#dc2219) : texte blanc lisible (contraste 4,9:1) */
+  --primary: #dc2219;
+  --primary-foreground: #ffffff;
+  --navy: #1d4079; /* bleu marine du logo */
+  --navy-foreground: #ffffff;
+  --link: oklch(0.42 0.12 258);
   --secondary: oklch(0.955 0.018 245); /* bleu très clair */
   --secondary-foreground: oklch(0.3 0.08 260);
   --muted: oklch(0.965 0.008 250);
   --muted-foreground: oklch(0.5 0.03 260);
   --accent: oklch(0.94 0.03 240);
   --accent-foreground: oklch(0.28 0.08 260);
-  --destructive: oklch(0.577 0.215 27);
+  --destructive: oklch(0.47 0.16 15); /* bordeaux, distinct du rouge des boutons */
   --border: oklch(0.915 0.012 250);
   --input: oklch(0.89 0.015 250);
   --ring: oklch(0.6 0.13 245);
@@ -46,15 +50,18 @@
   --card-foreground: oklch(0.95 0.008 250);
   --popover: oklch(0.215 0.03 262);
   --popover-foreground: oklch(0.95 0.008 250);
-  --primary: oklch(0.74 0.11 240); /* bleu clair en mode sombre */
-  --primary-foreground: oklch(0.18 0.04 262);
+  --primary: #dc2219;
+  --primary-foreground: #ffffff;
+  --navy: #2f5aa3;
+  --navy-foreground: #ffffff;
+  --link: oklch(0.78 0.1 240);
   --secondary: oklch(0.26 0.035 260);
   --secondary-foreground: oklch(0.93 0.01 250);
   --muted: oklch(0.245 0.03 262);
   --muted-foreground: oklch(0.7 0.03 255);
   --accent: oklch(0.28 0.045 258);
   --accent-foreground: oklch(0.95 0.01 250);
-  --destructive: oklch(0.68 0.19 25);
+  --destructive: oklch(0.7 0.15 15);
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.65 0.12 240);
@@ -88,6 +95,9 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-navy: var(--navy);
+  --color-navy-foreground: var(--navy-foreground);
+  --color-link: var(--link);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);

@@ -119,7 +119,7 @@ export function CrewPicker({
             if (!m) return null;
             return (
               <li key={c.userId} className="bg-secondary/60 flex items-center gap-2 rounded-lg py-1.5 pr-1.5 pl-2">
-                <span className="bg-primary text-primary-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
+                <span className="bg-navy text-navy-foreground flex size-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold">
                   {initials(m.firstName, m.lastName)}
                 </span>
                 <span className="min-w-0 flex-1 truncate text-sm font-medium">

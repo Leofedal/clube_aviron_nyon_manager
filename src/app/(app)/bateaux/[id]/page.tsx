@@ -80,7 +80,7 @@ export default async function BoatDetailPage({ params }: { params: Promise<{ id:
         <CardHeader>
           <CardTitle className="text-base">Historique des sorties</CardTitle>
           <CardAction>
-            <Link href={`/sorties?bateau=${boat.id}`} className="text-primary text-sm hover:underline">
+            <Link href={`/sorties?bateau=${boat.id}`} className="text-link text-sm hover:underline">
               Tout voir ({history.total})
             </Link>
           </CardAction>

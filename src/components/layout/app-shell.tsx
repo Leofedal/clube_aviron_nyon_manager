@@ -195,7 +195,7 @@ function MobileLink({
       href={href}
       className={cn(
         "flex flex-col items-center justify-center gap-0.5 py-2 text-[11px]",
-        active ? "text-primary font-medium" : "text-muted-foreground",
+        active ? "text-link font-medium" : "text-muted-foreground",
       )}
     >
       <Icon className="size-5" />

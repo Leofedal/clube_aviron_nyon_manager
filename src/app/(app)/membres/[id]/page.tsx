@@ -49,7 +49,7 @@ export default async function MemberDetailPage({
       </Link>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <span className="bg-primary text-primary-foreground flex size-14 items-center justify-center rounded-full text-lg font-semibold">
+          <span className="bg-navy text-navy-foreground flex size-14 items-center justify-center rounded-full text-lg font-semibold">
             {initials(member.firstName, member.lastName)}
           </span>
           <div>
@@ -139,7 +139,7 @@ export default async function MemberDetailPage({
         <CardHeader>
           <CardTitle className="text-base">Historique des sorties</CardTitle>
           <CardAction>
-            <Link href={`/sorties?membre=${member.id}`} className="text-primary text-sm hover:underline">
+            <Link href={`/sorties?membre=${member.id}`} className="text-link text-sm hover:underline">
               Tout voir ({history.total})
             </Link>
           </CardAction>
