@@ -47,6 +47,13 @@ export async function listBoatsWithAvailability(opts: { includeArchived?: boolea
 
 export type BoatWithAvailability = Awaited<ReturnType<typeof listBoatsWithAvailability>>[number];
 
+/** Toutes les étiquettes déjà utilisées (suggestions dans le formulaire). */
+export async function listBoatTagSuggestions(): Promise<string[]> {
+  const rows = await prisma.$queryRaw<{ tag: string }[]>`
+    SELECT DISTINCT unnest("tags") AS tag FROM "Boat" ORDER BY 1`;
+  return rows.map((r) => r.tag);
+}
+
 export function listBoatTypes() {
   return prisma.boatType.findMany({ orderBy: [{ sortOrder: "asc" }, { code: "asc" }] });
 }

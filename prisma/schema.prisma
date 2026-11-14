@@ -92,6 +92,9 @@ model Boat {
   coxswainCapacity  Int               @default(0)
   maintenanceStatus MaintenanceStatus @default(AVAILABLE)
   notes             String?
+  /// Étiquettes d'avertissement affichées au choix du bateau (ex. « Compétiteurs ou chevronnés seulement »).
+  /// Purement informatives : elles ne bloquent pas l'enregistrement d'une sortie.
+  tags              String[]          @default([])
   /// Bateau retiré de la flotte (conservé pour l'historique).
   isArchived        Boolean           @default(false)
   createdAt         DateTime          @default(now()) @db.Timestamptz(3)

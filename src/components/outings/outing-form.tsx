@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CrewPicker, type PickerMemberDTO } from "@/components/outings/crew-picker";
+import { BoatTagsWarning } from "@/components/boats/boat-tags";
 import { createRetrospectiveOutingAction, updateOutingAction } from "@/app/actions/outings";
 import { updateOutingSchema, type UpdateOutingData, type UpdateOutingInput } from "@/lib/validation/outing";
 import { formatDuration } from "@/lib/time";
@@ -122,6 +123,7 @@ export function OutingForm({
                       {g.items.map((b) => (
                         <SelectItem key={b.id} value={b.id} disabled={live && b.availability !== "AVAILABLE" && b.id !== defaults.boatId}>
                           {b.name} · {b.typeCode}
+                          {b.tags.length > 0 && " ⚠"}
                         </SelectItem>
                       ))}
                     </SelectGroup>
@@ -133,6 +135,8 @@ export function OutingForm({
           {formState.errors.boatId && <p className="text-destructive text-sm">{formState.errors.boatId.message}</p>}
         </div>
       </section>
+
+      {boat && <BoatTagsWarning boatName={boat.name} tags={boat.tags} />}
 
       <section className="grid gap-2">
         <Label>Équipage</Label>

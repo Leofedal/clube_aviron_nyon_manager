@@ -37,3 +37,17 @@ describe("validation des formulaires", () => {
     expect(retrospectiveOutingSchema.safeParse({ ...valid, departureTime: "25:00" }).success).toBe(false);
   });
 });
+
+import { boatSchema } from "@/lib/validation/admin";
+
+describe("étiquettes des bateaux", () => {
+  const base = { name: "Helvetia", boatTypeId: "t", rowingCapacity: 8, coxswainCapacity: 1, maintenanceStatus: "AVAILABLE" as const };
+  it("supprime les doublons (casse ignorée) et les espaces", () => {
+    const r = boatSchema.parse({ ...base, tags: [" Compétiteurs seulement ", "compétiteurs seulement", "Entraîneur"] });
+    expect(r.tags).toEqual(["compétiteurs seulement", "Entraîneur"]);
+  });
+  it("aucune étiquette par défaut, 5 au maximum", () => {
+    expect(boatSchema.parse(base).tags).toEqual([]);
+    expect(boatSchema.safeParse({ ...base, tags: ["a", "b", "c", "d", "e", "f"] }).success).toBe(false);
+  });
+});

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { Pencil, Plus } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
-import { listBoatTypes, listBoatsWithAvailability } from "@/lib/services/boats";
+import { listBoatTagSuggestions, listBoatTypes, listBoatsWithAvailability } from "@/lib/services/boats";
+import { BoatTags } from "@/components/boats/boat-tags";
 import { getBoatStats } from "@/lib/services/stats";
 import { canManageBoats } from "@/lib/permissions";
 import { formatDate } from "@/lib/time";
@@ -19,7 +20,12 @@ export const metadata = { title: "Bateaux" };
 export default async function BoatsPage() {
   const user = await requireUser();
   const admin = canManageBoats(user);
-  const [boats, stats, types] = await Promise.all([listBoatsWithAvailability(), getBoatStats(null), listBoatTypes()]);
+  const [boats, stats, types, tagSuggestions] = await Promise.all([
+    listBoatsWithAvailability(),
+    getBoatStats(null),
+    listBoatTypes(),
+    listBoatTagSuggestions(),
+  ]);
   const statById = new Map(stats.map((s) => [s.boatId, s]));
   const typeDTOs = types.map((t) => ({
     id: t.id,
@@ -44,6 +50,7 @@ export default async function BoatsPage() {
               <BoatTypeDialog />
               <BoatFormDialog
                 types={typeDTOs}
+                tagSuggestions={tagSuggestions}
                 trigger={
                   <Button size="sm">
                     <Plus /> Ajouter un bateau
@@ -78,6 +85,7 @@ export default async function BoatsPage() {
                     <Link href={`/bateaux/${b.id}`} className="hover:underline">
                       {b.name}
                     </Link>
+                    <BoatTags tags={b.tags} className="mt-1" />
                   </TableCell>
                   <TableCell>
                     <span className="text-muted-foreground">{b.boatType.label}</span> {b.boatType.code}
@@ -97,6 +105,7 @@ export default async function BoatsPage() {
                       <div className="flex justify-end">
                         <BoatFormDialog
                           types={typeDTOs}
+                          tagSuggestions={tagSuggestions}
                           boat={{
                             id: b.id,
                             name: b.name,
@@ -105,6 +114,7 @@ export default async function BoatsPage() {
                             coxswainCapacity: b.coxswainCapacity,
                             maintenanceStatus: b.maintenanceStatus,
                             notes: b.notes ?? "",
+                            tags: b.tags,
                           }}
                           trigger={
                             <Button variant="ghost" size="icon" aria-label={`Modifier ${b.name}`}>
@@ -134,6 +144,7 @@ export default async function BoatsPage() {
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate font-medium">{b.name}</span>
+                  <BoatTags tags={b.tags} className="my-0.5" />
                   <span className="text-muted-foreground block text-xs tabular">
                     {formatInt(s?.outings ?? 0)} sorties · {formatKm(s?.km ?? 0)} km
                   </span>

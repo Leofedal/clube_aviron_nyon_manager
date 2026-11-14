@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { saveBoatAction } from "@/app/actions/boats";
+import { TagInput } from "./tag-input";
 import { boatSchema, type BoatData, type BoatInput } from "@/lib/validation/admin";
 
 export interface BoatTypeDTO {
@@ -26,10 +27,12 @@ export function BoatFormDialog({
   boat,
   types,
   trigger,
+  tagSuggestions = [],
 }: {
   boat?: { id: string } & BoatInput;
   types: BoatTypeDTO[];
   trigger: React.ReactNode;
+  tagSuggestions?: string[];
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -43,6 +46,7 @@ export function BoatFormDialog({
       coxswainCapacity: 0,
       maintenanceStatus: "AVAILABLE",
       notes: "",
+      tags: [],
     },
   });
   const { register, control, handleSubmit, setValue, formState, setError, reset } = form;
@@ -138,6 +142,20 @@ export function BoatFormDialog({
                 </Select>
               )}
             />
+          </div>
+          <div className="grid gap-2">
+            <Label>Étiquettes d&apos;avertissement</Label>
+            <Controller
+              control={control}
+              name="tags"
+              render={({ field }) => (
+                <TagInput value={field.value ?? []} onChange={field.onChange} suggestions={tagSuggestions} />
+              )}
+            />
+            <p className="text-muted-foreground text-xs">
+              Affichées en avertissement quand un membre choisit ce bateau. Elles ne bloquent pas la sortie.
+            </p>
+            {formState.errors.tags && <p className="text-destructive text-sm">{formState.errors.tags.message}</p>}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="notes">Notes</Label>

@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BoatPicker } from "@/components/outings/boat-picker";
 import { CrewPicker, type PickerMemberDTO } from "@/components/outings/crew-picker";
 import { startOutingAction } from "@/app/actions/outings";
+import { BoatTagsWarning } from "@/components/boats/boat-tags";
 import { CLUB_TZ } from "@/lib/time";
 import { cn } from "@/lib/utils";
 import type { BoatOptionDTO } from "@/lib/picker-data";
@@ -145,6 +146,7 @@ export function StartOutingWizard({
               {boat.name} ({boat.typeCode}) · changer
             </button>
           </div>
+          <BoatTagsWarning boatName={boat.name} tags={boat.tags} />
           <CrewPicker
             members={members}
             value={crew}
@@ -166,6 +168,7 @@ export function StartOutingWizard({
           <h2 id="step-confirm" className="font-medium">
             Confirmez le départ
           </h2>
+          <BoatTagsWarning boatName={boat.name} tags={boat.tags} />
           <Card>
             <CardContent className="grid gap-3 text-sm">
               <div className="flex justify-between gap-4">

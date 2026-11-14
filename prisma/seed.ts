@@ -48,15 +48,20 @@ const BOAT_TYPES = [
   { code: "8+", label: "Huit avec barreur", defaultRowingCapacity: 8, defaultCoxswainCapacity: 1, sortOrder: 70 },
 ];
 
-const BOATS: { name: string; type: string; notes?: string; maintenance?: "MAINTENANCE" }[] = [
+const BOATS: { name: string; type: string; notes?: string; maintenance?: "MAINTENANCE"; tags?: string[] }[] = [
   { name: "Albatros", type: "1x" },
   { name: "Mouette", type: "1x", notes: "Fissure sur la coque à réparer", maintenance: "MAINTENANCE" },
   { name: "Filippi 2x", type: "2x" },
   { name: "Rhône", type: "2-" },
-  { name: "Empacher 4x", type: "4x" },
+  { name: "Empacher 4x", type: "4x", tags: ["Compétiteurs ou chevronnés seulement"] },
   { name: "Aar", type: "4-" },
   { name: "Jura", type: "4+" },
-  { name: "Helvetia", type: "8+", notes: "Bateau d'équipe — réservé aux entraînements du mardi et jeudi" },
+  {
+    name: "Helvetia",
+    type: "8+",
+    notes: "Bateau d'équipe — réservé aux entraînements du mardi et jeudi",
+    tags: ["Compétiteurs ou chevronnés seulement", "Entraîneur à proximité"],
+  },
 ];
 
 const MEMBERS = [
@@ -104,6 +109,7 @@ async function main() {
           rowingCapacity: t.defaultRowingCapacity,
           coxswainCapacity: t.defaultCoxswainCapacity,
           notes: b.notes,
+          tags: b.tags ?? [],
         },
       }),
     );

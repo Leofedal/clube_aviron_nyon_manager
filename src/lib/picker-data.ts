@@ -12,6 +12,7 @@ export interface BoatOptionDTO {
   activeSince: string | null;
   activeCrew: string | null;
   notes: string | null;
+  tags: string[];
 }
 
 /** Données des sélecteurs (bateaux + membres), sérialisables pour les composants client. */
@@ -34,6 +35,7 @@ export async function loadPickerData(opts: { includeInactiveMembers?: boolean } 
       activeSince: b.activeOuting?.departureAt.toISOString() ?? null,
       activeCrew: b.activeOuting?.crew.map((c) => c.user.firstName).join(", ") ?? null,
       notes: b.notes,
+      tags: b.tags,
     })),
     members: members.map((m) => ({ ...m, busyOn: busy.get(m.id) ?? null })),
   };

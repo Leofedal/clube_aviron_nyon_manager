@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardAction } from "@/componen
 import { StatCard } from "@/components/stats/stat-card";
 import { MonthlyBarChart } from "@/components/stats/charts";
 import { AvailabilityBadge } from "@/components/boats/availability-badge";
+import { BoatTags } from "@/components/boats/boat-tags";
 import { OutingStatusBadge } from "@/components/outings/status-badge";
 import { Activity, Clock, Route, CalendarDays } from "lucide-react";
 
@@ -44,6 +45,7 @@ export default async function BoatDetailPage({ params }: { params: Promise<{ id:
             <AvailabilityBadge availability={availability} />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{boat.name}</h1>
+          <BoatTags tags={boat.tags} className="my-1.5" />
           <p className="text-muted-foreground text-sm">
             {boat.boatType.label} {boat.boatType.code} · {boat.rowingCapacity} rameur{boat.rowingCapacity > 1 ? "s" : ""}
             {boat.coxswainCapacity > 0 && " + barreur"} · {MAINTENANCE_LABELS[boat.maintenanceStatus]}

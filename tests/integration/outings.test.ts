@@ -48,6 +48,14 @@ describe("Mode A — départ en temps réel", () => {
     );
   });
 
+  it("une étiquette d'avertissement ne bloque pas le départ", async () => {
+    const a = await makeUser();
+    const boat = await makeBoat({ rowers: 1 });
+    await prisma.boat.update({ where: { id: boat.id }, data: { tags: ["Compétiteurs ou chevronnés seulement"] } });
+    const o = await startOuting(actorOf(a), { boatId: boat.id, crew: rowers(a.id), departureDate: TODAY, departureTime: "10:00" }, NOW);
+    expect(o.status).toBe("IN_PROGRESS");
+  });
+
   it("refuse un bateau en maintenance", async () => {
     const a = await makeUser();
     const boat = await makeBoat({ rowers: 1, maintenance: "MAINTENANCE" });

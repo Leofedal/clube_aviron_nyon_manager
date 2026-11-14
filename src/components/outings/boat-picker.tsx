@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { formatTime } from "@/lib/time";
 import type { BoatOptionDTO } from "@/lib/picker-data";
+import { BoatTags } from "@/components/boats/boat-tags";
 
 const AVAIL: Record<BoatOptionDTO["availability"], { label: string; cls: string }> = {
   AVAILABLE: { label: "Disponible", cls: "text-success" },
@@ -62,6 +63,7 @@ export function BoatPicker({
                   {b.typeLabel} · {b.rowingCapacity} rameur{b.rowingCapacity > 1 ? "s" : ""}
                   {b.coxswainCapacity > 0 && " + barreur"}
                 </span>
+                <BoatTags tags={b.tags} className="mt-1.5" />
                 <span className={cn("mt-1 block text-xs font-medium", AVAIL[b.availability].cls)}>
                   {b.availability === "MAINTENANCE" && <Wrench className="mr-1 inline size-3 align-[-1px]" />}
                   {AVAIL[b.availability].label}

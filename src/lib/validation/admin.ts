@@ -34,6 +34,13 @@ export const boatSchema = z
       .max(1000)
       .optional()
       .transform((s) => (s && s.trim() ? s.trim() : null)),
+    /** Étiquettes d'avertissement (informatives) */
+    tags: z
+      .array(z.string().trim().min(1).max(60, "Étiquette trop longue (60 caractères max.)"))
+      .max(5, "5 étiquettes maximum")
+      .optional()
+      .default([])
+      .transform((t) => [...new Map(t.map((x) => [x.toLowerCase(), x])).values()]),
   });
 
 export const boatTypeSchema = z.object({

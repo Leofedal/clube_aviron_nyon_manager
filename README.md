@@ -46,6 +46,8 @@ Sans Docker : installez PostgreSQL ou créez une base gratuite chez [Neon](https
 
 Comptes de démonstration : `admin@aviron.example` (administrateur) et `prenom.nom@aviron.example`
 (ex. `marc.dubois@aviron.example`), mot de passe = valeur de `SEED_ADMIN_PASSWORD`.
+Avec `DEMO_LOGIN="true"` dans `.env`, la page de connexion affiche deux boutons « Administrateur » et « Membre »
+pour se connecter en un clic. **Ne jamais l'activer sur le site réel du club.**
 Le seed **efface la base** et refuse de s'exécuter en production (sauf `ALLOW_DEMO_SEED=true`).
 
 ## Tests
@@ -74,6 +76,8 @@ barreurs, filtrage par date, recalcul après correction, sorties annulées exclu
   - `CHECK` : retour > départ, distance ≥ 0, sortie terminée ⇒ retour + distance.
 - **Chevauchement autorisé** uniquement par un administrateur, explicitement (`overlapApproved`), et tracé
   dans le journal d'audit (`OVERLAP_OVERRIDE`).
+- **Étiquettes d'avertissement** sur les bateaux (ex. « Compétiteurs ou chevronnés seulement ») : définies par les
+  administrateurs, affichées au choix du bateau et dans les formulaires. Purement informatives, elles ne bloquent pas la sortie.
 - **Disponibilité « Sur l'eau »** dérivée des sorties en cours, jamais stockée. Les bateaux en maintenance ou
   indisponibles ne peuvent pas partir.
 - **Statistiques** calculées en SQL à la demande (aucun total stocké) : uniquement les sorties terminées,

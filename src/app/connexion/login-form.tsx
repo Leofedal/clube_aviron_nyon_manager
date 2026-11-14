@@ -6,9 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginAction } from "@/app/actions/auth";
 
-export function LoginForm({ next }: { next?: string }) {
+export interface DemoAccount {
+  label: string;
+  who: string;
+  email: string;
+  password: string;
+}
+
+export function LoginForm({ next, demoAccounts = [] }: { next?: string; demoAccounts?: DemoAccount[] }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  const login = (email: string, password: string) => {
+    setError(null);
+    startTransition(async () => {
+      const res = await loginAction({ email, password, next });
+      if (res && !res.ok) setError(res.error);
+    });
+  };
 
   return (
     <form
@@ -16,15 +31,7 @@ export function LoginForm({ next }: { next?: string }) {
       onSubmit={(e) => {
         e.preventDefault();
         const fd = new FormData(e.currentTarget);
-        setError(null);
-        startTransition(async () => {
-          const res = await loginAction({
-            email: String(fd.get("email") ?? ""),
-            password: String(fd.get("password") ?? ""),
-            next,
-          });
-          if (res && !res.ok) setError(res.error);
-        });
+        login(String(fd.get("email") ?? ""), String(fd.get("password") ?? ""));
       }}
     >
       <div className="grid gap-2">
@@ -44,6 +51,26 @@ export function LoginForm({ next }: { next?: string }) {
         {pending && <Loader2 className="animate-spin" />}
         Se connecter
       </Button>
+      {demoAccounts.length > 0 && (
+        <div className="border-t pt-4">
+          <p className="text-muted-foreground mb-2 text-xs font-medium">Comptes de démonstration</p>
+          <div className="grid grid-cols-2 gap-2">
+            {demoAccounts.map((a) => (
+              <Button
+                key={a.email}
+                type="button"
+                variant="outline"
+                className="h-auto flex-col items-start gap-0 py-2"
+                disabled={pending}
+                onClick={() => login(a.email, a.password)}
+              >
+                <span className="font-semibold">{a.label}</span>
+                <span className="text-muted-foreground text-xs font-normal">{a.who}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
     </form>
   );
 }
