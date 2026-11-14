@@ -1,0 +1,166 @@
+// Rowing Club Manager — schéma de données
+// Tous les horodatages sont stockés en UTC (timestamptz) et affichés en Europe/Zurich.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = []
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum MaintenanceStatus {
+  AVAILABLE   // En service
+  MAINTENANCE // En réparation / entretien
+  UNAVAILABLE // Indisponible (hivernage, prêt, etc.)
+}
+
+enum OutingStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum EntryMode {
+  LIVE          // Départ enregistré en temps réel
+  RETROSPECTIVE // Sortie saisie après coup
+}
+
+enum CrewRole {
+  ROWER
+  COXSWAIN
+}
+
+model User {
+  id           String   @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(MEMBER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(3)
+
+  sessions       Session[]
+  crewEntries    OutingCrew[]
+  createdOutings Outing[]     @relation("OutingCreatedBy")
+  updatedOutings Outing[]     @relation("OutingUpdatedBy")
+  auditLogs      AuditLog[]
+
+  @@index([lastName, firstName])
+}
+
+/// Sessions d'authentification stockées en base (révocables immédiatement).
+/// Seul le hash SHA-256 du jeton est conservé.
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Types de bateaux configurables (1x, 2x, 4+, 8+…).
+model BoatType {
+  id                     String   @id @default(cuid())
+  code                   String   @unique // ex. "2x"
+  label                  String // ex. "Deux de couple"
+  defaultRowingCapacity  Int
+  defaultCoxswainCapacity Int     @default(0)
+  sortOrder              Int      @default(100)
+  createdAt              DateTime @default(now()) @db.Timestamptz(3)
+  boats                  Boat[]
+}
+
+model Boat {
+  id                String            @id @default(cuid())
+  name              String            @unique
+  boatTypeId        String
+  rowingCapacity    Int
+  coxswainCapacity  Int               @default(0)
+  maintenanceStatus MaintenanceStatus @default(AVAILABLE)
+  notes             String?
+  /// Bateau retiré de la flotte (conservé pour l'historique).
+  isArchived        Boolean           @default(false)
+  createdAt         DateTime          @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime          @updatedAt @db.Timestamptz(3)
+
+  boatType BoatType @relation(fields: [boatTypeId], references: [id], onDelete: Restrict)
+  outings  Outing[]
+}
+
+model Outing {
+  id          String       @id @default(cuid())
+  boatId      String
+  createdById String
+  updatedById String?
+  departureAt DateTime     @db.Timestamptz(3)
+  returnAt    DateTime?    @db.Timestamptz(3)
+  /// Kilomètres parcourus (précision décimale : 9999.99)
+  distanceKm  Decimal?     @db.Decimal(6, 2)
+  status      OutingStatus @default(IN_PROGRESS)
+  entryMode   EntryMode
+  notes       String?
+  /// Chevauchement autorisé explicitement par un administrateur (tracé dans AuditLog).
+  overlapApproved Boolean  @default(false)
+  cancelledAt     DateTime? @db.Timestamptz(3)
+  cancelReason    String?
+  createdAt   DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @db.Timestamptz(3)
+
+  boat      Boat         @relation(fields: [boatId], references: [id], onDelete: Restrict)
+  createdBy User         @relation("OutingCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  updatedBy User?        @relation("OutingUpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+  crew      OutingCrew[]
+
+  @@index([departureAt])
+  @@index([boatId, departureAt])
+  @@index([status])
+  // Contraintes PostgreSQL supplémentaires (voir migration "outing_constraints") :
+  //  - un seul départ actif par bateau (index unique partiel)
+  //  - pas de chevauchement de périodes par bateau (contrainte d'exclusion GiST)
+  //  - cohérence retour > départ, distance >= 0, sortie terminée => retour + distance
+}
+
+model OutingCrew {
+  id       String   @id @default(cuid())
+  outingId String
+  userId   String
+  crewRole CrewRole @default(ROWER)
+  /// Place dans le bateau (facultatif, pour un usage futur)
+  seat     Int?
+
+  outing Outing @relation(fields: [outingId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([outingId, userId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id             String   @id @default(cuid())
+  actorId        String?
+  entityType     String // "Outing", "Boat", "User", "BoatType"
+  entityId       String
+  action         String // "CREATE", "START", "FINISH", "UPDATE", "CANCEL", "OVERLAP_OVERRIDE", ...
+  previousValues Json?
+  newValues      Json?
+  createdAt      DateTime @default(now()) @db.Timestamptz(3)
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
