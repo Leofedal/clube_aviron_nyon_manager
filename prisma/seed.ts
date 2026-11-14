@@ -10,6 +10,7 @@ import { hashPassword } from "../src/lib/auth/password";
 import { createRetrospectiveOuting, finishOuting, startOuting } from "../src/lib/services/outings";
 import { addDaysToDateString, resolveOutingTimes, toLocalDateString, toLocalTimeString } from "../src/lib/time";
 import type { Actor } from "../src/lib/permissions";
+import { DomainError } from "../src/lib/errors";
 
 const prisma = new PrismaClient();
 
@@ -114,7 +115,8 @@ async function main() {
   console.log("→ 50 sorties historiques…");
   let created = 0;
   let attempts = 0;
-  while (created < 50 && attempts < 1000) {
+  const started = Date.now();
+  while (created < 50 && attempts < 300) {
     attempts++;
     const daysAgo = 1 + Math.floor(rand() * 240);
     const date = addDaysToDateString(today, -daysAgo);
@@ -157,10 +159,16 @@ async function main() {
         });
       }
       created++;
-    } catch {
-      // conflit (bateau ou équipier déjà pris) : on tire une autre combinaison
+      if (created % 5 === 0) {
+        console.log(`   ${created}/50 sorties (${Math.round((Date.now() - started) / 1000)} s)`);
+      }
+    } catch (e) {
+      // Conflit métier (bateau ou équipier déjà pris) : on tire une autre combinaison.
+      // Toute autre erreur (connexion, délai dépassé…) est affichée et arrête le seed.
+      if (!(e instanceof DomainError)) throw e;
     }
   }
+  if (created < 50) console.warn(`⚠ Seulement ${created} sorties historiques créées.`);
 
   console.log("→ 3 sorties en cours…");
   const now = Date.now();

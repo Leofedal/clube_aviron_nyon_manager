@@ -89,14 +89,17 @@ async function lockResources(tx: Tx, boatIds: string[], userIds: string[]) {
     ...[...new Set(boatIds)].sort().map((id) => `boat:${id}`),
     ...[...new Set(userIds)].sort().map((id) => `user:${id}`),
   ];
-  for (const key of keys) {
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${key}))`;
-  }
+  if (keys.length === 0) return;
+  // Une seule requête : les verrous sont pris dans l'ordre du tableau (WITH ORDINALITY).
+  await tx.$executeRaw`
+    SELECT pg_advisory_xact_lock(hashtext(k))
+    FROM unnest(${keys}::text[]) WITH ORDINALITY AS t(k, i)
+    ORDER BY i`;
 }
 
 async function runInTransaction<T>(fn: (tx: Tx) => Promise<T>): Promise<T> {
   try {
-    return await prisma.$transaction(fn, { timeout: 15000, maxWait: 10000 });
+    return await prisma.$transaction(fn, { timeout: 30000, maxWait: 15000 });
   } catch (e) {
     if (e instanceof DomainError) throw e;
     const mapped = mapDatabaseError(e);
