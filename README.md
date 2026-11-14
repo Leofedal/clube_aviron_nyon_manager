@@ -64,8 +64,19 @@ Le seed **efface la base** et refuse de s'exécuter en production (sauf `ALLOW_D
 
 ### Mode démonstration du tableau de bord
 
-Avec `DEMO_LOGIN="true"`, on peut simuler l'heure et le vent en ajoutant des paramètres à l'adresse du tableau de bord.
-Un bandeau « Simulation » signale que les données sont fictives. Ignoré quand `DEMO_LOGIN` n'est pas activé.
+Pour présenter l'application, on peut simuler l'heure et le vent en ajoutant des paramètres à l'adresse du
+tableau de bord, sans toucher au code.
+
+**Utilisation**
+
+1. Vérifier que `.env` contient `DEMO_LOGIN="true"` (sinon les paramètres sont ignorés).
+2. Lancer l'application : `npm run dev`.
+3. Se connecter (bouton « Administrateur » ou « Membre » de la page de connexion).
+4. Ouvrir une des adresses ci-dessous dans le navigateur.
+
+Un bandeau bleu « Simulation — données fictives pour la démonstration » s'affiche en haut de la carte météo,
+pour que personne ne confonde avec la vraie météo. Sur le site réel du club (`DEMO_LOGIN` absent), ces paramètres
+n'ont aucun effet : personne ne peut fausser la météo affichée.
 
 | Pour montrer… | Adresse |
 |---|---|
@@ -78,7 +89,17 @@ Un bandeau « Simulation » signale que les données sont fictives. Ignoré quan
 | Vent très fort, sortie déconseillée | `http://localhost:3000/?vent=35&rafales=50&direction=230` |
 | Tout combiné | `http://localhost:3000/?heure=16:30&vent=24&rafales=38&direction=315` |
 
-`direction` = d'où vient le vent, en degrés (45 = nord-est / Bise, 230 = sud-ouest / Vent, 315 = nord-ouest / Joran).
+**Paramètres**
+
+| Paramètre | Effet | Exemple |
+|---|---|---|
+| `heure` | Simule l'heure actuelle (HH:MM). Le coucher du soleil reste le vrai, celui du jour. | `heure=16:30` |
+| `vent` | Vitesse moyenne du vent, en km/h | `vent=24` |
+| `rafales` | Rafales, en km/h (jamais inférieures au vent moyen) | `rafales=38` |
+| `direction` | D'où vient le vent, en degrés : 45 = nord-est (Bise), 230 = sud-ouest (Vent), 315 = nord-ouest (Joran) | `direction=315` |
+
+Les paramètres se combinent avec `&`. Pour les prochaines heures, le vent simulé faiblit progressivement.
+Les niveaux d'alerte (faible, modéré, fort, très fort) suivent les seuils définis dans `src/lib/wind.ts`.
 
 ## Tests
 
